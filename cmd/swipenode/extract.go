@@ -13,14 +13,14 @@ var extractURL string
 
 var extractCmd = &cobra.Command{
 	Use:   "extract",
-	Short: "Extract Next.js hydration data from a URL",
+	Short: "Extract structured data from a URL (Next.js, Nuxt.js, or clean text)",
 	Run: func(cmd *cobra.Command, args []string) {
 		if extractURL == "" {
 			fmt.Fprintln(os.Stderr, "error: --url is required")
 			os.Exit(1)
 		}
 
-		data, err := extractor.ExtractNextData(extractURL)
+		data, err := extractor.ExtractData(extractURL)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
@@ -31,6 +31,6 @@ var extractCmd = &cobra.Command{
 }
 
 func init() {
-	extractCmd.Flags().StringVar(&extractURL, "url", "", "target URL to extract __NEXT_DATA__ from")
+	extractCmd.Flags().StringVar(&extractURL, "url", "", "target URL to extract data from")
 	rootCmd.AddCommand(extractCmd)
 }
