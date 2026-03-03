@@ -27,7 +27,7 @@ AI agents need web data. Today, that means one of two painful options:
 | **Headless browsers** (Puppeteer, Playwright) | Slow startup, high memory, complex dependencies, breaks in containers |
 | **Generic scrapers** (BeautifulSoup, cheerio) | No understanding of framework-specific data structures, lots of glue code |
 
-Modern frontend frameworks like **Next.js** already embed their entire data layer as structured JSON directly in the HTML source — hidden in plain sight inside `<script id="__NEXT_DATA__">` tags. No JavaScript execution required.
+Modern frontend frameworks like **Next.js** and **Nuxt.js** already embed their entire data layer as structured JSON directly in the HTML source — hidden in plain sight inside `<script>` tags. No JavaScript execution required.
 
 **Nobody is extracting it efficiently.**
 
@@ -36,11 +36,14 @@ Modern frontend frameworks like **Next.js** already embed their entire data laye
 SwipeNode is a single, statically-compiled binary that fetches raw HTML and surgically extracts the structured data that frameworks embed at build time.
 
 ```
-┌──────────────┐     HTTP GET      ┌──────────────┐     CSS Selector     ┌──────────────┐
-│              │  ──────────────►  │              │  ──────────────────►  │              │
-│   AI Agent   │                   │  Raw HTML    │                       │  Clean JSON  │
-│              │  ◄──────────────  │  (no render) │  ◄──────────────────  │  to stdout   │
-└──────────────┘   structured data └──────────────┘    __NEXT_DATA__      └──────────────┘
+                         ┌─────────────────────────────────────────────┐
+                         │            Fallback Cascade                 │
+┌──────────────┐         │                                             │         ┌──────────────┐
+│              │  HTTP   │  1. Next.js  ──  __NEXT_DATA__ JSON         │  data   │              │
+│   AI Agent   │  GET    │  2. Nuxt.js  ──  window.__NUXT__ payload    │  ────►  │    stdout    │
+│              │  ────►  │  3. Fallback ──  cleaned visible text       │         │              │
+└──────────────┘         │                                             │         └──────────────┘
+                         └─────────────────────────────────────────────┘
 ```
 
 No browser. No JavaScript engine. No render pipeline. Just the data.
@@ -49,9 +52,10 @@ No browser. No JavaScript engine. No render pipeline. Just the data.
 
 - **Instant extraction** — Single HTTP request, CSS selector match, done. Milliseconds, not seconds.
 - **Zero dependencies at runtime** — Ships as one static binary. No Node.js, no Chrome, no container images.
-- **AI-agent friendly** — Clean JSON to stdout, errors to stderr. Pipe it, parse it, chain it.
+- **AI-agent friendly** — Clean data to stdout, errors to stderr. Pipe it, parse it, chain it.
 - **Realistic HTTP fingerprint** — Proper `User-Agent` and `Accept` headers to avoid bot detection.
-- **Framework-aware** — Purpose-built selectors that understand how frameworks embed data, starting with Next.js.
+- **Framework-aware** — Purpose-built selectors that understand how Next.js and Nuxt.js embed data.
+- **Always returns something** — Fallback cascade ensures you get structured JSON, framework payloads, or cleaned visible text — never an empty result on a valid page.
 
 ## Quick Start
 
@@ -72,11 +76,17 @@ go build -o swipenode .
 ### Usage
 
 ```bash
-# Extract Next.js hydration data from any Next.js-powered page
+# Extract data from any page — the cascade picks the best strategy automatically
 swipenode extract --url "https://example.com/page"
 
-# Pipe to jq for pretty-printed, queryable JSON
-swipenode extract --url "https://example.com/page" | jq '.props.pageProps'
+# Next.js site → returns raw __NEXT_DATA__ JSON, pipe to jq
+swipenode extract --url "https://nextjs-site.com" | jq '.props.pageProps'
+
+# Nuxt.js site → returns window.__NUXT__ payload
+swipenode extract --url "https://nuxtjs-site.com"
+
+# Any other site → returns cleaned visible text (boilerplate stripped)
+swipenode extract --url "https://plain-html-site.com"
 
 # Use in an AI agent pipeline
 DATA=$(swipenode extract --url "$TARGET_URL" 2>/dev/null)
@@ -87,7 +97,7 @@ DATA=$(swipenode extract --url "$TARGET_URL" 2>/dev/null)
 ```
 swipenode
 ├── extract          Extract structured data from a URL
-│   └── --url        Target URL to extract __NEXT_DATA__ from
+│   └── --url        Target URL to extract data from
 └── help             Help about any command
 ```
 
@@ -102,20 +112,24 @@ swipenode/
 │       └── extract.go          # extract subcommand
 └── pkg/
     └── extractor/
-        └── nextjs.go           # Next.js __NEXT_DATA__ extractor
+        └── extractor.go        # Fallback cascade: Next.js → Nuxt.js → clean text
 ```
 
 The design follows three principles:
 
-1. **Separation of concerns** — The `pkg/extractor` package is a pure library with no CLI dependencies. Import it in your own Go code, call `extractor.ExtractNextData(url)`, get JSON back.
+1. **Separation of concerns** — The `pkg/extractor` package is a pure library with no CLI dependencies. Import it in your own Go code, call `extractor.ExtractData(url)`, get data back.
 
-2. **Stdout is sacred** — Only clean, parseable JSON hits stdout. All errors, warnings, and diagnostics go to stderr. This makes SwipeNode a reliable component in shell pipelines and agent tool chains.
+2. **Stdout is sacred** — Only clean, parseable data hits stdout. All errors, warnings, and diagnostics go to stderr. This makes SwipeNode a reliable component in shell pipelines and agent tool chains.
 
-3. **One job, done well** — Each extractor targets a specific framework's data embedding pattern with a precise CSS selector, not a generic scraper that returns noisy HTML.
+3. **Always return something useful** — The fallback cascade guarantees a result for any valid page: structured JSON when a framework is detected, cleaned visible text otherwise.
 
 ## How It Works
 
-Most Next.js applications embed their complete page data in a script tag during server-side rendering:
+SwipeNode runs a three-stage fallback cascade against every page:
+
+### Stage 1 — Next.js
+
+Next.js embeds its complete page data during server-side rendering:
 
 ```html
 <script id="__NEXT_DATA__" type="application/json">
@@ -123,12 +137,27 @@ Most Next.js applications embed their complete page data in a script tag during 
 </script>
 ```
 
-SwipeNode's extraction pipeline:
+SwipeNode matches `script#__NEXT_DATA__[type="application/json"]` and returns the raw JSON.
 
-1. **Fetch** — HTTP GET with a realistic browser `User-Agent` and `Accept` header
-2. **Parse** — Stream the HTML response through goquery (built on Go's `net/html`)
-3. **Select** — Target `script#__NEXT_DATA__[type="application/json"]` with a single CSS selector
-4. **Return** — Trim whitespace, validate non-empty, print raw JSON to stdout
+### Stage 2 — Nuxt.js
+
+Nuxt applications hydrate via a global assignment:
+
+```html
+<script>window.__NUXT__={data:[...],state:{...}}</script>
+```
+
+SwipeNode scans all `<script>` tags for one containing `window.__NUXT__` and returns its full text.
+
+### Stage 3 — Clean Text Fallback
+
+If no framework payload is detected, SwipeNode strips boilerplate elements (`<script>`, `<style>`, `<noscript>`, `<header>`, `<footer>`, `<nav>`), extracts the remaining visible body text, and normalises whitespace into a clean, readable format.
+
+### The pipeline
+
+```
+Fetch (HTTP GET) → Parse (goquery) → Cascade (Next → Nuxt → Text) → stdout
+```
 
 The entire operation is a single HTTP round-trip with in-memory HTML parsing. No DOM construction, no layout calculation, no paint cycle.
 
@@ -136,8 +165,9 @@ The entire operation is a single HTTP round-trip with in-memory HTML parsing. No
 
 SwipeNode is starting with Next.js, but the architecture is designed to grow:
 
-- [ ] **Next.js** `__NEXT_DATA__` extraction — *shipped*
-- [ ] **Nuxt.js** `__NUXT_DATA__` extraction
+- [x] **Next.js** `__NEXT_DATA__` extraction
+- [x] **Nuxt.js** `window.__NUXT__` extraction
+- [x] **Clean text fallback** — boilerplate-stripped visible text
 - [ ] **Remix** loader data extraction
 - [ ] **Gatsby** `window.___gatsby` / `pageData` extraction
 - [ ] **Generic** JSON-LD / `<script type="application/ld+json">` extraction
@@ -168,12 +198,11 @@ go build -o swipenode .
 ./swipenode extract --url "https://some-nextjs-site.com"
 ```
 
-To add a new extractor:
+To add a new extractor stage:
 
-1. Create a new file in `pkg/extractor/` (e.g., `nuxt.go`)
-2. Implement a function following the same pattern as `ExtractNextData`
-3. Add a new subcommand in `cmd/swipenode/` that calls your extractor
-4. Submit a PR
+1. Add a `tryXxx(doc *goquery.Document) (string, bool)` function in `pkg/extractor/extractor.go`
+2. Insert it into the cascade in `ExtractData` at the appropriate priority
+3. Submit a PR
 
 ## License
 
