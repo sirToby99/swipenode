@@ -2,6 +2,7 @@
 package extractor
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -29,12 +30,12 @@ func ExtractData(url string) (string, error) {
 
 	// Attempt 1: Next.js __NEXT_DATA__
 	if data, ok := tryNextJS(doc); ok {
-		return data, nil
+		return pruneJSON(data), nil
 	}
 
 	// Attempt 2: Nuxt.js window.__NUXT__
 	if data, ok := tryNuxtJS(doc); ok {
-		return data, nil
+		return pruneJSON(data), nil
 	}
 
 	// Attempt 3: Clean text fallback
@@ -108,4 +109,82 @@ func fallbackCleanText(doc *goquery.Document) string {
 	raw := doc.Find("body").Text()
 	clean := collapseWS.ReplaceAllString(raw, "\n")
 	return strings.TrimSpace(clean)
+}
+
+// junkKeySubstrings are case-insensitive substrings that mark a key for removal.
+var junkKeySubstrings = []string{"tracking", "analytics", "pixel", "telemetry"}
+
+// pruneJSON strips tracking/analytics keys, huge base64-like strings, and
+// resulting empty containers from a JSON payload to save LLM tokens.
+func pruneJSON(rawJSON string) string {
+	var data interface{}
+	if err := json.Unmarshal([]byte(rawJSON), &data); err != nil {
+		return rawJSON // unparseable → return as-is
+	}
+
+	pruned := pruneValue(data, "")
+	if pruned == nil {
+		return rawJSON
+	}
+
+	out, err := json.Marshal(pruned)
+	if err != nil {
+		return rawJSON
+	}
+	return string(out)
+}
+
+// pruneValue recursively walks a decoded JSON value and applies pruning rules.
+// parentKey is the map key that led to this value (empty at the root).
+func pruneValue(v interface{}, parentKey string) interface{} {
+	switch val := v.(type) {
+	case map[string]interface{}:
+		out := make(map[string]interface{}, len(val))
+		for k, child := range val {
+			if isJunkKey(k) {
+				continue
+			}
+			pruned := pruneValue(child, k)
+			if pruned != nil {
+				out[k] = pruned
+			}
+		}
+		if len(out) == 0 {
+			return nil
+		}
+		return out
+
+	case []interface{}:
+		out := make([]interface{}, 0, len(val))
+		for _, child := range val {
+			pruned := pruneValue(child, "")
+			if pruned != nil {
+				out = append(out, pruned)
+			}
+		}
+		if len(out) == 0 {
+			return nil
+		}
+		return out
+
+	case string:
+		if len(val) > 500 && !strings.Contains(val, " ") {
+			return nil
+		}
+		return val
+
+	default:
+		return v
+	}
+}
+
+// isJunkKey returns true if the key contains any junk substring (case-insensitive).
+func isJunkKey(key string) bool {
+	lower := strings.ToLower(key)
+	for _, sub := range junkKeySubstrings {
+		if strings.Contains(lower, sub) {
+			return true
+		}
+	}
+	return false
 }

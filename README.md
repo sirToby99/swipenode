@@ -48,6 +48,7 @@ SwipeNode is a single static binary that fetches raw HTML and runs a three-stage
 - **Stage 1 — Next.js**: Extracts the `__NEXT_DATA__` JSON blob (structured props, page data, everything).
 - **Stage 2 — Nuxt.js**: Grabs the `window.__NUXT__` hydration payload.
 - **Stage 3 — Clean text**: Strips `<script>`, `<style>`, nav, header, footer — returns only visible body text.
+- **Smart JSON Pruning (Token-Diet)**: Before returning any JSON payload, SwipeNode automatically strips huge base64 strings, tracking/analytics keys, pixel tags, and telemetry data — saving massive amounts of LLM context window so your agent spends tokens on *real* content, not noise.
 
 The result: **up to 95% fewer input tokens** compared to sending raw HTML to your LLM.
 
@@ -133,6 +134,8 @@ swipenode/
 - [x] **Next.js** `__NEXT_DATA__` extraction
 - [x] **Nuxt.js** `window.__NUXT__` extraction
 - [x] **Clean text fallback** — boilerplate-stripped visible text
+- [x] **JSON Pruning** — smart token-diet that strips tracking, analytics, base64, and telemetry noise
+- [ ] **Advanced TLS-Fingerprint Spoofing** — Bypass strict WAFs (Cloudflare/Datadome) by perfectly mimicking Chrome's TLS signature.
 - [ ] **Remix** loader data extraction
 - [ ] **Gatsby** `window.___gatsby` / `pageData` extraction
 - [ ] **JSON-LD** `<script type="application/ld+json">` extraction
