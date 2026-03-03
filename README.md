@@ -5,6 +5,10 @@
   <img src="https://img.shields.io/badge/Status-Alpha-orange?style=for-the-badge" alt="Status" />
 </p>
 
+<p align="center">
+  <img src="swipenode.png" alt="SwipeNode Logo" width="400" />
+</p>
+
 <h1 align="center">SwipeNode ⚡</h1>
 
 <p align="center">
