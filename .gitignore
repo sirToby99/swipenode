@@ -1,2 +1,12 @@
 # Binary
 /swipenode
+
+# Environment files
+.env
+.env.*
+
+# Private keys and certificates
+*.pem
+*.key
+*.p12
+*.pfx
