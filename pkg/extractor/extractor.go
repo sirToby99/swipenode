@@ -42,32 +42,61 @@ func ExtractData(url string) (string, error) {
 	return fallbackCleanText(doc), nil
 }
 
-// fetchDocument performs an HTTP GET with realistic headers and returns a
-// parsed goquery document.
-func fetchDocument(url string) (*goquery.Document, error) {
-	req, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil {
-		return nil, fmt.Errorf("creating request: %w", err)
-	}
-	req.Header.Set("User-Agent", userAgent)
-	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+package extractor
 
-	resp, err := http.DefaultClient.Do(req)
+import (
+	"fmt"
+	"io"
+
+	tls_client "github.com/bogdanfinn/tls-client"
+	"github.com/bogdanfinn/tls-client/profiles"
+)
+
+// FetchURL lädt den HTML-Code herunter und maskiert sich dabei als Chrome
+func FetchURL(targetURL string) (string, error) {
+	// 1. Wir definieren die Optionen für unseren "Tarnkappen"-Client
+	options := []tls_client.HttpClientOption{
+		tls_client.WithTimeoutSeconds(15),
+		// Hier ist die Magie: Wir emulieren den neuesten Chrome-Browser
+		tls_client.WithClientProfile(profiles.Chrome_120), 
+		tls_client.WithNotFollowRedirects(),
+	}
+
+	// 2. Client initialisieren
+	client, err := tls_client.NewHttpClient(tls_client.NewNoopLogger(), options...)
 	if err != nil {
-		return nil, fmt.Errorf("fetching %s: %w", url, err)
+		return "", fmt.Errorf("fehler beim erstellen des tls-clients: %v", err)
+	}
+
+	// 3. Request zusammenbauen
+	req, err := tls_client.NewRequest("GET", targetURL, nil)
+	if err != nil {
+		return "", err
+	}
+
+	// Wichtig: Auch Standard-Header setzen, damit das Bild perfekt ist
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8")
+	req.Header.Set("Accept-Language", "en-US,en;q=0.9")
+
+	// 4. Request abfeuern
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status %d for %s", resp.StatusCode, url)
+	if resp.StatusCode != 200 {
+		return "", fmt.Errorf("unerwarteter statuscode: %d", resp.StatusCode)
 	}
 
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	// 5. Body auslesen
+	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("parsing HTML: %w", err)
+		return "", err
 	}
 
-	return doc, nil
+	return string(bodyBytes), nil
 }
 
 // tryNextJS looks for the Next.js hydration payload.
