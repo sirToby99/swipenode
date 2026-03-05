@@ -9,8 +9,6 @@
   <img src="swipenode.png" alt="SwipeNode Logo" width="400" />
 </p>
 
-<h1 align="center">SwipeNode ⚡</h1>
-
 <p align="center">
   <strong>Lightning-fast, zero-render web extraction built for AI agents.</strong><br/>
   One binary. One HTTP request. Structured data out — no browser required.
