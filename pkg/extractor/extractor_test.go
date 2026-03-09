@@ -21,7 +21,7 @@ func TestExtractData_NextJS(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	data, err := ExtractData(srv.URL)
+	data, err := ExtractData(srv.URL, "chrome")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -47,7 +47,7 @@ func TestExtractData_NuxtJS(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	data, err := ExtractData(srv.URL)
+	data, err := ExtractData(srv.URL, "chrome")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -77,7 +77,7 @@ func TestExtractData_Fallback(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	data, err := ExtractData(srv.URL)
+	data, err := ExtractData(srv.URL, "chrome")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -120,7 +120,7 @@ func TestExtractData_NextJSPriority(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	data, err := ExtractData(srv.URL)
+	data, err := ExtractData(srv.URL, "chrome")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -135,7 +135,7 @@ func TestExtractData_HTTPError(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	_, err := ExtractData(srv.URL)
+	_, err := ExtractData(srv.URL, "chrome")
 	if err == nil {
 		t.Fatal("expected error for 404 response")
 	}
@@ -145,6 +145,7 @@ func TestExtractData_HTTPError(t *testing.T) {
 }
 
 func TestExtractData_UserAgent(t *testing.T) {
+	expectedUA := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 	var gotUA string
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		gotUA = r.Header.Get("User-Agent")
@@ -153,9 +154,9 @@ func TestExtractData_UserAgent(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ExtractData(srv.URL)
+	ExtractData(srv.URL, "chrome")
 
-	if gotUA != userAgent {
-		t.Errorf("expected User-Agent %q, got %q", userAgent, gotUA)
+	if gotUA != expectedUA {
+		t.Errorf("expected User-Agent %q, got %q", expectedUA, gotUA)
 	}
 }
