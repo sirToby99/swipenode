@@ -88,10 +88,41 @@ DATA=$(swipenode extract --url "$URL" 2>/dev/null)
 
 ```
 swipenode
-├── extract          Extract structured data from a URL
-│   └── --url        Target URL to extract data from
-└── help             Help about any command
+├── extract               Extract structured data from a URL
+│   ├── --url             Target URL to extract data from
+│   └── --impersonate     Browser TLS fingerprint: chrome (default), safari, firefox
+└── help                  Help about any command
 ```
+
+## v1.1 — TLS Fingerprint Spoofing (`--impersonate`)
+
+Many high-security sites (Cloudflare, Datadome, PerimeterX) block requests not just on IP or User-Agent, but on the **TLS handshake fingerprint** — the exact cipher suites, extensions, and ordering that a real browser sends during the SSL/TLS negotiation. Go's standard `net/http` client has a predictable fingerprint that is trivially detected and blocked.
+
+SwipeNode v1.1 replaces the default HTTP client with **[bogdanfinn/tls-client](https://github.com/bogdanfinn/tls-client)**, which wraps [`utls`](https://github.com/refraction-networking/utls) to produce bit-for-bit accurate TLS hello messages for real browsers.
+
+### Usage
+
+```bash
+# Default — impersonates Chrome 120 (recommended for most sites)
+swipenode extract --url "https://protected-site.com"
+
+# Explicitly set the browser fingerprint
+swipenode extract --url "https://protected-site.com" --impersonate chrome
+swipenode extract --url "https://protected-site.com" --impersonate safari
+swipenode extract --url "https://protected-site.com" --impersonate firefox
+```
+
+### Supported profiles
+
+| Value | Profile |
+|---|---|
+| `chrome` (default) | Chrome 120 — Windows 10 |
+| `safari` | Safari 16.0 — iOS |
+| `firefox` | Firefox 120 |
+
+### Why this matters
+
+Without TLS spoofing, WAF bot-detection systems see a Go TLS fingerprint and immediately return a 403 or challenge page — before your User-Agent header is even read. With `--impersonate`, the entire TLS negotiation is indistinguishable from a real browser, so the request reaches the actual page content.
 
 ## Python / LLM Integration
 
@@ -137,7 +168,7 @@ swipenode/
 - [x] **Nuxt.js** `window.__NUXT__` extraction
 - [x] **Clean text fallback** — boilerplate-stripped visible text
 - [x] **JSON Pruning** — smart token-diet that strips tracking, analytics, base64, and telemetry noise
-- [ ] **Advanced TLS-Fingerprint Spoofing** — Bypass strict WAFs (Cloudflare/Datadome) by perfectly mimicking Chrome's TLS signature.
+- [x] **Advanced TLS-Fingerprint Spoofing** — Bypass strict WAFs (Cloudflare/Datadome) by perfectly mimicking Chrome's TLS signature.
 - [ ] **Remix** loader data extraction
 - [ ] **Gatsby** `window.___gatsby` / `pageData` extraction
 - [ ] **JSON-LD** `<script type="application/ld+json">` extraction
@@ -161,6 +192,48 @@ To add a new extractor stage:
 1. Add a `tryXxx(doc *goquery.Document) (string, bool)` function in `pkg/extractor/extractor.go`
 2. Insert it into the cascade in `ExtractData` at the appropriate priority
 3. Submit a PR
+
+## Credits
+
+SwipeNode builds on the following open-source libraries:
+
+### bogdanfinn/tls-client
+
+TLS fingerprint spoofing is powered by [bogdanfinn/tls-client](https://github.com/bogdanfinn/tls-client), which is licensed under the **BSD 4-Clause License**:
+
+```
+Copyright (c) 2023, Bogdan Finn
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. All advertising materials mentioning features or use of this software must
+   display the following acknowledgement:
+   This product includes software developed by Bogdan Finn.
+
+4. Neither the name of the copyright holder nor the names of its contributors
+   may be used to endorse or promote products derived from this software
+   without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+```
 
 ## License
 

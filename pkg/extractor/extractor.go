@@ -4,14 +4,14 @@ package extractor
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"regexp"
 	"strings"
 
+	fhttp "github.com/bogdanfinn/fhttp"
+	tls_client "github.com/bogdanfinn/tls-client"
+	"github.com/bogdanfinn/tls-client/profiles"
 	"github.com/PuerkitoBio/goquery"
 )
-
-const userAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
 // collapseWS matches two or more consecutive whitespace characters (including newlines).
 var collapseWS = regexp.MustCompile(`\s{2,}`)
@@ -22,8 +22,8 @@ var collapseWS = regexp.MustCompile(`\s{2,}`)
 //  1. Next.js  — <script id="__NEXT_DATA__" type="application/json">
 //  2. Nuxt.js  — any <script> containing window.__NUXT__
 //  3. Fallback — cleaned visible body text (boilerplate tags removed)
-func ExtractData(url string) (string, error) {
-	doc, err := fetchDocument(url)
+func ExtractData(url string, browser string) (string, error) {
+	doc, err := fetchDocument(url, browser)
 	if err != nil {
 		return "", err
 	}
@@ -42,23 +42,48 @@ func ExtractData(url string) (string, error) {
 	return fallbackCleanText(doc), nil
 }
 
-// fetchDocument performs an HTTP GET with realistic headers and returns a
-// parsed goquery document.
-func fetchDocument(url string) (*goquery.Document, error) {
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+// fetchDocument performs an HTTP GET using a TLS-spoofed client that mimics
+// the given browser's fingerprint and returns a parsed goquery document.
+func fetchDocument(url string, browser string) (*goquery.Document, error) {
+	var selectedProfile profiles.ClientProfile
+	switch strings.ToLower(browser) {
+	case "safari":
+		selectedProfile = profiles.Safari_IOS_16_0
+	case "firefox":
+		selectedProfile = profiles.Firefox_120
+	case "chrome":
+		fallthrough
+	default:
+		selectedProfile = profiles.Chrome_120
+	}
+
+	options := []tls_client.HttpClientOption{
+		tls_client.WithTimeoutSeconds(15),
+		tls_client.WithClientProfile(selectedProfile),
+		tls_client.WithNotFollowRedirects(),
+	}
+
+	client, err := tls_client.NewHttpClient(tls_client.NewNoopLogger(), options...)
+	if err != nil {
+		return nil, fmt.Errorf("creating tls client: %w", err)
+	}
+
+	req, err := fhttp.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("creating request: %w", err)
 	}
-	req.Header.Set("User-Agent", userAgent)
-	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
 
-	resp, err := http.DefaultClient.Do(req)
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8")
+	req.Header.Set("Accept-Language", "en-US,en;q=0.9")
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("fetching %s: %w", url, err)
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != fhttp.StatusOK {
 		return nil, fmt.Errorf("unexpected status %d for %s", resp.StatusCode, url)
 	}
 
