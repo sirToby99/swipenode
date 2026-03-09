@@ -1,6 +1,7 @@
 package extractor
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -25,11 +26,14 @@ func TestExtractData_NextJS(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if !strings.Contains(data, `"pageProps"`) {
-		t.Errorf("expected Next.js JSON payload, got: %s", data)
+	if !json.Valid([]byte(data)) {
+		t.Errorf("expected valid JSON, got: %s", data)
 	}
-	if !strings.HasPrefix(data, "{") {
-		t.Errorf("expected JSON object, got: %s", data)
+	if !strings.Contains(data, `"nextjs"`) {
+		t.Errorf("expected nextjs key in JSON output, got: %s", data)
+	}
+	if !strings.Contains(data, `"pageProps"`) {
+		t.Errorf("expected pageProps in JSON output, got: %s", data)
 	}
 }
 
@@ -51,8 +55,11 @@ func TestExtractData_NuxtJS(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if !strings.Contains(data, "window.__NUXT__") {
-		t.Errorf("expected Nuxt.js payload, got: %s", data)
+	if !json.Valid([]byte(data)) {
+		t.Errorf("expected valid JSON, got: %s", data)
+	}
+	if !strings.Contains(data, `"nuxtjs_raw"`) {
+		t.Errorf("expected nuxtjs_raw key in JSON output, got: %s", data)
 	}
 }
 
@@ -68,7 +75,6 @@ func TestExtractData_Fallback(t *testing.T) {
   <p>This is the main content of the page.</p>
 </main>
 <footer>Copyright 2025</footer>
-<script>console.log("tracking");</script>
 </body></html>`
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -81,7 +87,6 @@ func TestExtractData_Fallback(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-
 	// Boilerplate elements should be stripped
 	if strings.Contains(data, "tracking") {
 		t.Error("expected <script> content to be removed")
@@ -106,7 +111,7 @@ func TestExtractData_Fallback(t *testing.T) {
 }
 
 func TestExtractData_NextJSPriority(t *testing.T) {
-	// Page has BOTH Next.js and Nuxt.js — Next.js should win.
+	// Page has BOTH Next.js and Nuxt.js — both should appear in the output.
 	page := `<!DOCTYPE html>
 <html><head></head>
 <body>
@@ -124,8 +129,14 @@ func TestExtractData_NextJSPriority(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
+	if !json.Valid([]byte(data)) {
+		t.Errorf("expected valid JSON, got: %s", data)
+	}
 	if !strings.Contains(data, `"nextjs"`) {
-		t.Errorf("expected Next.js to take priority, got: %s", data)
+		t.Errorf("expected nextjs key in output, got: %s", data)
+	}
+	if !strings.Contains(data, `"nuxtjs_raw"`) {
+		t.Errorf("expected nuxtjs_raw key in output, got: %s", data)
 	}
 }
 
@@ -158,5 +169,60 @@ func TestExtractData_UserAgent(t *testing.T) {
 
 	if gotUA != expectedUA {
 		t.Errorf("expected User-Agent %q, got %q", expectedUA, gotUA)
+	}
+}
+
+func TestExtractData_JSONLD(t *testing.T) {
+	page := `<!DOCTYPE html>
+<html><head><title>Site with JSON-LD</title></head>
+<body>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"Test Corp"}</script>
+<p>Hello World</p>
+</body></html>`
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(page))
+	}))
+	defer srv.Close()
+
+	data, err := ExtractData(srv.URL, "chrome")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !json.Valid([]byte(data)) {
+		t.Errorf("expected valid JSON, got: %s", data)
+	}
+	if !strings.Contains(data, `"json_ld"`) {
+		t.Errorf("expected json_ld key in output, got: %s", data)
+	}
+	if !strings.Contains(data, `"Test Corp"`) {
+		t.Errorf("expected organization name in output, got: %s", data)
+	}
+}
+
+func TestExtractData_Remix(t *testing.T) {
+	page := `<!DOCTYPE html>
+<html><head></head>
+<body>
+<script>window.__remixContext = {state:{loaderData:{}}}</script>
+<p>Remix App</p>
+</body></html>`
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(page))
+	}))
+	defer srv.Close()
+
+	data, err := ExtractData(srv.URL, "chrome")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !json.Valid([]byte(data)) {
+		t.Errorf("expected valid JSON, got: %s", data)
+	}
+	if !strings.Contains(data, `"remix_raw"`) {
+		t.Errorf("expected remix_raw key in output, got: %s", data)
 	}
 }

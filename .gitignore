@@ -1,6 +1,6 @@
 # Binary
-/swipenode
-/swipenode.exe
+swipenode
+swipenode.exe
 
 # Environment files
 .env

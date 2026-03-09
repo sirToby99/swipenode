@@ -30,18 +30,7 @@ func ExtractData(url string, browser string) (string, error) {
 		return "", err
 	}
 
-	// Attempt 1: Next.js __NEXT_DATA__
-	if data, ok := tryNextJS(doc); ok {
-		return pruneJSON(data), nil
-	}
-
-	// Attempt 2: Nuxt.js window.__NUXT__
-	if data, ok := tryNuxtJS(doc); ok {
-		return pruneJSON(data), nil
-	}
-
-	// Attempt 3: Clean text fallback
-	return fallbackCleanText(doc), nil
+	return parseStructuredData(doc)
 }
 
 // validateURL checks that the target URL uses http(s) and does not resolve to
@@ -258,4 +247,58 @@ func isJunkKey(key string) bool {
 		}
 	}
 	return false
+}
+
+// parseStructuredData extracts structured data from modern web frameworks
+// (Next.js, Nuxt, Remix, Gatsby) and JSON-LD markup.
+func parseStructuredData(doc *goquery.Document) (string, error) {
+	result := make(map[string]interface{})
+
+	// 1. Next.js (NEXT_DATA)
+	nextData := doc.Find("script#__NEXT_DATA__").Text()
+	if nextData != "" {
+		var jsonMap map[string]interface{}
+		if err := json.Unmarshal([]byte(nextData), &jsonMap); err == nil {
+			result["nextjs"] = jsonMap
+		}
+	}
+
+	// 2. JSON-LD (SEO and structured data)
+	var jsonLdData []interface{}
+	doc.Find("script[type='application/ld+json']").Each(func(i int, s *goquery.Selection) {
+		var ldMap interface{}
+		if err := json.Unmarshal([]byte(s.Text()), &ldMap); err == nil {
+			jsonLdData = append(jsonLdData, ldMap)
+		}
+	})
+	if len(jsonLdData) > 0 {
+		result["json_ld"] = jsonLdData
+	}
+
+	// 3. Nuxt.js, Gatsby & Remix (Raw inline scripts)
+	doc.Find("script").Each(func(i int, s *goquery.Selection) {
+		text := s.Text()
+		if strings.Contains(text, "window.__NUXT__") {
+			result["nuxtjs_raw"] = text
+		}
+		if strings.Contains(text, "window.___gatsby") || strings.Contains(text, "pageData") {
+			result["gatsby_raw"] = text
+		}
+		if strings.Contains(text, "window.__remixContext") {
+			result["remix_raw"] = text
+		}
+	})
+
+	// No structured data found — fall back to cleaned visible text.
+	if len(result) == 0 {
+		return fallbackCleanText(doc), nil
+	}
+
+	// Marshal to JSON, then prune tracking/base64/telemetry noise.
+	jsonBytes, err := json.MarshalIndent(result, "", "  ")
+	if err != nil {
+		return "", err
+	}
+
+	return pruneJSON(string(jsonBytes)), nil
 }

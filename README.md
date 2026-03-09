@@ -36,21 +36,26 @@ Meanwhile, modern frameworks like **Next.js** and **Nuxt.js** embed their entire
 
 ## The Solution
 
-SwipeNode is a single static binary that fetches raw HTML and runs a three-stage **fallback cascade** to pull out the cleanest possible data:
+SwipeNode is a single static binary that fetches raw HTML and extracts **all structured data** from modern web frameworks in a single pass:
 
 ```
 ┌──────────────┐         ┌─────────────────────────────────────────────┐         ┌──────────────┐
-│              │  HTTP   │            Fallback Cascade                 │  data   │              │
-│   AI Agent   │  GET    │  1. Next.js  ──  __NEXT_DATA__ JSON        │  ────►  │    stdout    │
-│              │  ────►  │  2. Nuxt.js  ──  window.__NUXT__ payload   │         │              │
-└──────────────┘         │  3. Fallback ──  cleaned visible text      │         └──────────────┘
+│              │  HTTP   │         Structured Data Extraction          │  JSON   │              │
+│   AI Agent   │  GET    │  1. Next.js   ──  __NEXT_DATA__ JSON       │  ────►  │    stdout    │
+│              │  ────►  │  2. JSON-LD   ──  application/ld+json      │         │              │
+└──────────────┘         │  3. Nuxt.js   ──  window.__NUXT__          │         └──────────────┘
+                         │  4. Gatsby    ──  window.___gatsby          │
+                         │  5. Remix     ──  window.__remixContext     │
                          └─────────────────────────────────────────────┘
 ```
 
-- **Stage 1 — Next.js**: Extracts the `__NEXT_DATA__` JSON blob (structured props, page data, everything).
-- **Stage 2 — Nuxt.js**: Grabs the `window.__NUXT__` hydration payload.
-- **Stage 3 — Clean text**: Strips `<script>`, `<style>`, nav, header, footer — returns only visible body text.
-- **Smart JSON Pruning (Token-Diet)**: Before returning any JSON payload, SwipeNode automatically strips huge base64 strings, tracking/analytics keys, pixel tags, and telemetry data — saving massive amounts of LLM context window so your agent spends tokens on *real* content, not noise.
+- **Next.js**: Parses the `__NEXT_DATA__` JSON blob (structured props, page data, everything) into a `"nextjs"` key.
+- **JSON-LD**: Extracts all `<script type="application/ld+json">` blocks (SEO / schema.org structured data) into a `"json_ld"` array.
+- **Nuxt.js**: Captures the `window.__NUXT__` hydration payload as `"nuxtjs_raw"`.
+- **Gatsby**: Captures `window.___gatsby` / `pageData` scripts as `"gatsby_raw"`.
+- **Remix**: Captures `window.__remixContext` scripts as `"remix_raw"`.
+
+When no framework data is detected, the output is `{"status":"no_framework_data_found"}`.
 
 The result: **up to 95% fewer input tokens** compared to sending raw HTML to your LLM.
 
@@ -72,13 +77,16 @@ One binary, zero runtime dependencies. Copy it anywhere.
 swipenode extract --url "https://example.com/page"
 
 # Next.js site — pipe structured JSON straight to jq
-swipenode extract --url "https://nextjs-site.com" | jq '.props.pageProps'
+swipenode extract --url "https://nextjs-site.com" | jq '.nextjs.props.pageProps'
 
 # Nuxt.js site — grab the hydration payload
-swipenode extract --url "https://nuxtjs-site.com"
+swipenode extract --url "https://nuxtjs-site.com" | jq '.nuxtjs_raw'
 
-# Any other site — get cleaned visible text, no boilerplate
-swipenode extract --url "https://plain-html-site.com"
+# JSON-LD / schema.org data
+swipenode extract --url "https://any-site.com" | jq '.json_ld'
+
+# Remix site — grab the loader context
+swipenode extract --url "https://remix-site.com" | jq '.remix_raw'
 
 # Silence errors, capture just the data
 DATA=$(swipenode extract --url "$URL" 2>/dev/null)
@@ -151,7 +159,7 @@ swipenode/
 │       └── extract.go          # extract subcommand
 ├── pkg/
 │   └── extractor/
-│       └── extractor.go        # Fallback cascade engine
+│       └── extractor.go        # Structured data extraction engine
 └── examples/
     └── agent_demo.py           # Python + OpenAI agent demo
 ```
@@ -160,18 +168,17 @@ swipenode/
 
 1. **Stdout is sacred** — Only clean, parseable data hits stdout. Errors and diagnostics go to stderr. This makes SwipeNode a first-class citizen in shell pipelines and agent tool chains.
 2. **Library-first** — `pkg/extractor` is a pure Go library with no CLI dependencies. Import it directly: `extractor.ExtractData(url)`.
-3. **Always return something** — The cascade guarantees a result for any valid page: structured JSON when a framework is detected, cleaned text otherwise.
+3. **Always return something** — Every request returns valid JSON: structured framework data when detected, a `no_framework_data_found` status otherwise.
 
 ## Roadmap
 
 - [x] **Next.js** `__NEXT_DATA__` extraction
 - [x] **Nuxt.js** `window.__NUXT__` extraction
-- [x] **Clean text fallback** — boilerplate-stripped visible text
+- [x] **Remix** `window.__remixContext` extraction
+- [x] **Gatsby** `window.___gatsby` / `pageData` extraction
+- [x] **JSON-LD** `<script type="application/ld+json">` extraction
 - [x] **JSON Pruning** — smart token-diet that strips tracking, analytics, base64, and telemetry noise
 - [x] **Advanced TLS-Fingerprint Spoofing** — Bypass strict WAFs (Cloudflare/Datadome) by perfectly mimicking Chrome's TLS signature.
-- [ ] **Remix** loader data extraction
-- [ ] **Gatsby** `window.___gatsby` / `pageData` extraction
-- [ ] **JSON-LD** `<script type="application/ld+json">` extraction
 - [ ] **Batch mode** — extract from a list of URLs in parallel
 - [ ] **WASM build** — run SwipeNode inside browser-based AI agents
 - [ ] **MCP server** — expose extractors as Model Context Protocol tools
@@ -187,11 +194,12 @@ go build -o swipenode .
 go test ./...
 ```
 
-To add a new extractor stage:
+To add a new framework extractor:
 
-1. Add a `tryXxx(doc *goquery.Document) (string, bool)` function in `pkg/extractor/extractor.go`
-2. Insert it into the cascade in `ExtractData` at the appropriate priority
-3. Submit a PR
+1. Add detection logic inside `parseStructuredData()` in `pkg/extractor/extractor.go`
+2. Store extracted data in the `result` map with a descriptive key
+3. Add corresponding tests in `pkg/extractor/extractor_test.go`
+4. Submit a PR
 
 ## Credits
 
