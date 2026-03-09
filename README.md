@@ -1,6 +1,6 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Go-1.24+-00ADD8?style=for-the-badge&logo=go&logoColor=white" alt="Go Version" />
-  <img src="https://img.shields.io/badge/License-Apache%202.0-blue?style=for-the-badge" alt="License" />
+  <img src="https://img.shields.io/badge/License-FSL%201.1-blue?style=for-the-badge" alt="License" />
   <img src="https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey?style=for-the-badge" alt="Platform" />
   <img src="https://img.shields.io/badge/Status-Beta-brightgreen?style=for-the-badge" alt="Status" />
 </p>
@@ -174,10 +174,6 @@ swipenode/
     └── agent_demo.py           # Python + OpenAI agent demo
 ```
 
-**Design principles:**
-1. **Stdout is sacred** — Only clean, parseable data hits stdout. Errors and diagnostics go to stderr. This makes SwipeNode a first-class citizen in shell pipelines and agent tool chains.
-2. **Library-first** — `pkg/extractor` is a pure Go library with no CLI dependencies. Import it directly: `extractor.ExtractData(url, impersonate)`.
-
 ## Roadmap
 
 - [x] **Next.js** `__NEXT_DATA__` extraction
@@ -191,17 +187,6 @@ swipenode/
 - [x] **Batch mode** — extract from a list of URLs in parallel
 - [x] **MCP server** — expose extractors as Model Context Protocol tools for AI agents
 - [x] **WASM build** — *Note: Running SwipeNode natively in the browser via WebAssembly is not currently supported. Browser security models prevent the custom TCP socket dialing required for TLS fingerprint spoofing, meaning a WASM build would fail to bypass WAFs.*
-
-## Contributing
-
-Contributions are welcome. The codebase is intentionally small and approachable.
-
-```bash
-git clone [https://github.com/sirToby99/swipenode.git](https://github.com/sirToby99/swipenode.git)
-cd swipenode
-go build -o swipenode .
-go test ./...
-```
 
 ## Credits
 
@@ -250,18 +235,18 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```text
 Copyright 2026 SwipeNode Contributors
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+This project is licensed under the **Functional Source License (FSL) v1.1-Apache-2.0**.
 
-    [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
+You are free to use, modify, and redistribute this software for almost any purpose (including internal business use and building non-competing applications). However, you may not use it to provide a **Competing Use** (such as offering SwipeNode's extraction capabilities as a commercial API, SaaS, or scraping service to third parties). 
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+After two years, the license for each version automatically converts to the standard **Apache 2.0 License**.
+
+For the full license text, see the [LICENSE](LICENSE) file.
 ```
+
+## Legal Disclaimer
+
+> **Disclaimer:** SwipeNode is a tool designed for legitimate data extraction, research, and AI agent enablement. Users are solely responsible for ensuring that their use of SwipeNode complies with the Terms of Service of the websites they access, as well as applicable local laws regarding data privacy and copyright. The creators of SwipeNode do not endorse, encourage, or assume liability for unauthorized web scraping, DDoS attacks, bypassing security measures for malicious purposes, or any other illegal activity. SwipeNode is provided "AS IS" without any warranties.
 
 ---
 
