@@ -122,6 +122,7 @@ func fetchDocument(rawURL string, browser string) (*goquery.Document, error) {
 	// Host header so TLS SNI and virtual hosting work correctly.
 	parsed, _ := url.Parse(rawURL) // already validated
 	originalHost := parsed.Host
+	originalHostname := parsed.Hostname()
 	port := parsed.Port()
 	if port == "" {
 		if parsed.Scheme == "https" {
@@ -137,6 +138,7 @@ func fetchDocument(rawURL string, browser string) (*goquery.Document, error) {
 		tls_client.WithTimeoutSeconds(15),
 		tls_client.WithClientProfile(selectedProfile),
 		tls_client.WithNotFollowRedirects(),
+		tls_client.WithServerNameOverwrite(originalHostname),
 	}
 
 	client, err := tls_client.NewHttpClient(tls_client.NewNoopLogger(), options...)
