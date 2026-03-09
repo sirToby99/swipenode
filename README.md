@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/Go-1.24+-00ADD8?style=for-the-badge&logo=go&logoColor=white" alt="Go Version" />
-  <img src="https://img.shields.io/badge/License-Apache%202.0-blue?style=for-the-badge" alt="License" />
-  <img src="https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey?style=for-the-badge" alt="Platform" />
-  <img src="https://img.shields.io/badge/Status-Alpha-orange?style=for-the-badge" alt="Status" />
+  <img src="[https://img.shields.io/badge/Go-1.24+-00ADD8?style=for-the-badge&logo=go&logoColor=white](https://img.shields.io/badge/Go-1.24+-00ADD8?style=for-the-badge&logo=go&logoColor=white)" alt="Go Version" />
+  <img src="[https://img.shields.io/badge/License-Apache%202.0-blue?style=for-the-badge](https://img.shields.io/badge/License-Apache%202.0-blue?style=for-the-badge)" alt="License" />
+  <img src="[https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey?style=for-the-badge](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey?style=for-the-badge)" alt="Platform" />
+  <img src="[https://img.shields.io/badge/Status-Beta-brightgreen?style=for-the-badge](https://img.shields.io/badge/Status-Beta-brightgreen?style=for-the-badge)" alt="Status" />
 </p>
 
 <p align="center">
@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  <code>swipenode extract --url https://example.com | jq .</code>
+  <code>swipenode extract --url [https://example.com](https://example.com) | jq .</code>
 </p>
 
 ---
@@ -26,67 +26,89 @@ AI agents need web data. The current options are all bad:
 
 | Approach | What goes wrong |
 |---|---|
-| **Headless browsers** (Playwright, Puppeteer) | 200 MB+ runtime, multi-second startup, breaks in containers, expensive at scale |
+| **Headless browsers** (Playwright, Puppeteer) | 200 MB+ runtime, multi-second startup, breaks in containers, expensive at scale, blocked by WAFs |
 | **Raw HTML to the LLM** | Dumps `<div>`, `<script>`, CSS noise — wastes 90%+ of your input tokens on boilerplate |
 | **Generic scrapers** (BeautifulSoup, cheerio) | Blind to framework data structures, requires per-site glue code |
 
 Meanwhile, modern frameworks like **Next.js** and **Nuxt.js** embed their entire data layer as structured JSON right in the HTML source — hidden in `<script>` tags, waiting to be read. No JavaScript execution needed.
 
-**SwipeNode extracts it in milliseconds.**
+**SwipeNode extracts it in milliseconds while bypassing modern WAFs.**
 
 ## The Solution
 
-SwipeNode is a single static binary that fetches raw HTML and extracts **all structured data** from modern web frameworks in a single pass:
+SwipeNode is a single static binary that fetches raw HTML, automatically bypasses Cloudflare/Datadome via TLS fingerprint spoofing, and extracts **all structured data** in a single pass. 
 
-```
+```text
 ┌──────────────┐         ┌─────────────────────────────────────────────┐         ┌──────────────┐
-│              │  HTTP   │         Structured Data Extraction          │  JSON   │              │
-│   AI Agent   │  GET    │  1. Next.js   ──  __NEXT_DATA__ JSON       │  ────►  │    stdout    │
-│              │  ────►  │  2. JSON-LD   ──  application/ld+json      │         │              │
-└──────────────┘         │  3. Nuxt.js   ──  window.__NUXT__          │         └──────────────┘
+│              │  HTTP   │        Structured Data Extraction           │  JSON   │              │
+│   AI Agent   │  GET    │  1. Next.js   ──  __NEXT_DATA__ JSON        │  ────►  │    stdout    │
+│              │  ────►  │  2. JSON-LD   ──  application/ld+json       │         │              │
+└──────────────┘         │  3. Nuxt.js   ──  window.__NUXT__           │         └──────────────┘
                          │  4. Gatsby    ──  window.___gatsby          │
                          │  5. Remix     ──  window.__remixContext     │
                          └─────────────────────────────────────────────┘
 ```
 
-- **Next.js**: Parses the `__NEXT_DATA__` JSON blob (structured props, page data, everything) into a `"nextjs"` key.
-- **JSON-LD**: Extracts all `<script type="application/ld+json">` blocks (SEO / schema.org structured data) into a `"json_ld"` array.
-- **Nuxt.js**: Captures the `window.__NUXT__` hydration payload as `"nuxtjs_raw"`.
-- **Gatsby**: Captures `window.___gatsby` / `pageData` scripts as `"gatsby_raw"`.
-- **Remix**: Captures `window.__remixContext` scripts as `"remix_raw"`.
+- **Smart JSON Pruning:** The extracted payload is automatically put on a "token diet." SwipeNode strips out tracking pixels, telemetry (`_sentryBaggage`), base64 images, and UI noise before returning the JSON.
+- **Clean Text Fallback:** If no modern framework is detected, SwipeNode falls back to stripping boilerplate HTML and returning the clean, visible text.
 
-When no framework data is detected, the output is `{"status":"no_framework_data_found"}`.
-
-The result: **up to 95% fewer input tokens** compared to sending raw HTML to your LLM.
+The result: **up to 98% fewer input tokens** compared to sending raw HTML to your LLM.
 
 ## Installation
 
 ```bash
 # Requires Go 1.24+
-git clone https://github.com/swipenode-local/swipenode.git
+git clone https://github.com/sirToby99/swipenode.git
 cd swipenode
 go build -o swipenode .
 ```
 
 One binary, zero runtime dependencies. Copy it anywhere.
 
-## CLI Usage
+## 🤖 Model Context Protocol (MCP) — For AI Agents
+
+SwipeNode isn't just a CLI tool; it's a native tool for local AI agents like **Claude Desktop**. By running SwipeNode as an MCP server, your AI gets real-time, WAF-bypassing access to the internet.
+
+### One-Click Install for Claude Desktop
+
+```bash
+./swipenode install-mcp
+```
+*This command automatically locates your Claude Desktop configuration and safely registers SwipeNode as an MCP server.*
+
+**How to use it:**
+1. Restart Claude Desktop.
+2. You'll see the "plug" icon 🔌 indicating tools are available.
+3. Ask Claude: *"Use your extract tool to read [https://www.theverge.com](https://www.theverge.com) and summarize the top 3 tech news."*
+4. Claude will secretly use SwipeNode to bypass Cloudflare, extract the clean JSON, and give you the perfect summary while saving thousands of API tokens.
+
+## ⚡ Batch Mode (High-Performance Extraction)
+
+Need to process 100 or 1,000 URLs? SwipeNode leverages Go's Goroutines to extract data concurrently without eating up your RAM like Headless Chrome would.
+
+```bash
+# Create a list of URLs
+cat <<EOF > urls.txt
+https://www.theverge.com/
+https://news.ycombinator.com/
+EOF
+
+# Run concurrent batch extraction (default: 10 workers)
+swipenode batch --file urls.txt --concurrency 5 --out results.json
+```
+Failed URLs won't crash the process; network and DNS errors are neatly caught and logged per-URL in the resulting JSON array.
+
+## CLI Usage (Single Extraction)
 
 ```bash
 # Auto-detect framework and extract the best data
 swipenode extract --url "https://example.com/page"
 
+# Explicitly bypass WAFs by impersonating Safari
+swipenode extract --url "https://protected-site.com" --impersonate safari
+
 # Next.js site — pipe structured JSON straight to jq
 swipenode extract --url "https://nextjs-site.com" | jq '.nextjs.props.pageProps'
-
-# Nuxt.js site — grab the hydration payload
-swipenode extract --url "https://nuxtjs-site.com" | jq '.nuxtjs_raw'
-
-# JSON-LD / schema.org data
-swipenode extract --url "https://any-site.com" | jq '.json_ld'
-
-# Remix site — grab the loader context
-swipenode extract --url "https://remix-site.com" | jq '.remix_raw'
 
 # Silence errors, capture just the data
 DATA=$(swipenode extract --url "$URL" 2>/dev/null)
@@ -94,31 +116,20 @@ DATA=$(swipenode extract --url "$URL" 2>/dev/null)
 
 ### CLI Reference
 
-```
+```text
 swipenode
-├── extract               Extract structured data from a URL
-│   ├── --url             Target URL to extract data from
-│   └── --impersonate     Browser TLS fingerprint: chrome (default), safari, firefox
-└── help                  Help about any command
+├── extract              Extract structured data from a single URL
+├── batch                Extract data from multiple URLs concurrently
+├── mcp                  Start the stdio Model Context Protocol server
+├── install-mcp          Auto-configure SwipeNode for Claude Desktop
+└── help                 Help about any command
 ```
 
 ## v1.1 — TLS Fingerprint Spoofing (`--impersonate`)
 
-Many high-security sites (Cloudflare, Datadome, PerimeterX) block requests not just on IP or User-Agent, but on the **TLS handshake fingerprint** — the exact cipher suites, extensions, and ordering that a real browser sends during the SSL/TLS negotiation. Go's standard `net/http` client has a predictable fingerprint that is trivially detected and blocked.
+Many high-security sites (Cloudflare, Datadome, PerimeterX) block requests not just on IP or User-Agent, but on the **TLS handshake fingerprint** — the exact cipher suites, extensions, and ordering that a real browser sends during the SSL/TLS negotiation. Go's standard `net/http` client is trivially detected and blocked.
 
-SwipeNode v1.1 replaces the default HTTP client with **[bogdanfinn/tls-client](https://github.com/bogdanfinn/tls-client)**, which wraps [`utls`](https://github.com/refraction-networking/utls) to produce bit-for-bit accurate TLS hello messages for real browsers.
-
-### Usage
-
-```bash
-# Default — impersonates Chrome 120 (recommended for most sites)
-swipenode extract --url "https://protected-site.com"
-
-# Explicitly set the browser fingerprint
-swipenode extract --url "https://protected-site.com" --impersonate chrome
-swipenode extract --url "https://protected-site.com" --impersonate safari
-swipenode extract --url "https://protected-site.com" --impersonate firefox
-```
+SwipeNode v1.1 replaces the default HTTP client with **[bogdanfinn/tls-client](https://github.com/bogdanfinn/tls-client)**, producing bit-for-bit accurate TLS hello messages for real browsers. Without this, bot-detection systems see a Go TLS fingerprint and immediately return a 403. With `--impersonate`, the entire TLS negotiation is indistinguishable from a real browser.
 
 ### Supported profiles
 
@@ -127,10 +138,6 @@ swipenode extract --url "https://protected-site.com" --impersonate firefox
 | `chrome` (default) | Chrome 120 — Windows 10 |
 | `safari` | Safari 16.0 — iOS |
 | `firefox` | Firefox 120 |
-
-### Why this matters
-
-Without TLS spoofing, WAF bot-detection systems see a Go TLS fingerprint and immediately return a 403 or challenge page — before your User-Agent header is even read. With `--impersonate`, the entire TLS negotiation is indistinguishable from a real browser, so the request reaches the actual page content.
 
 ## Python / LLM Integration
 
@@ -150,25 +157,26 @@ For a complete working example that pipes extracted data into an OpenAI chat com
 
 ## Architecture
 
-```
+```text
 swipenode/
 ├── main.go                     # Entry point
 ├── cmd/
 │   └── swipenode/
 │       ├── root.go             # Cobra root command
-│       └── extract.go          # extract subcommand
+│       ├── extract.go          # Single URL extraction
+│       ├── batch.go            # Concurrent worker pool extraction
+│       ├── mcp.go              # Stdio MCP server
+│       └── install_mcp.go      # Auto-installer for Claude Desktop
 ├── pkg/
 │   └── extractor/
-│       └── extractor.go        # Structured data extraction engine
+│       └── extractor.go        # Structured data extraction & pruning engine
 └── examples/
     └── agent_demo.py           # Python + OpenAI agent demo
 ```
 
 **Design principles:**
-
 1. **Stdout is sacred** — Only clean, parseable data hits stdout. Errors and diagnostics go to stderr. This makes SwipeNode a first-class citizen in shell pipelines and agent tool chains.
-2. **Library-first** — `pkg/extractor` is a pure Go library with no CLI dependencies. Import it directly: `extractor.ExtractData(url)`.
-3. **Always return something** — Every request returns valid JSON: structured framework data when detected, a `no_framework_data_found` status otherwise.
+2. **Library-first** — `pkg/extractor` is a pure Go library with no CLI dependencies. Import it directly: `extractor.ExtractData(url, impersonate)`.
 
 ## Roadmap
 
@@ -177,29 +185,23 @@ swipenode/
 - [x] **Remix** `window.__remixContext` extraction
 - [x] **Gatsby** `window.___gatsby` / `pageData` extraction
 - [x] **JSON-LD** `<script type="application/ld+json">` extraction
+- [x] **Clean text fallback** — boilerplate-stripped visible text for older sites
 - [x] **JSON Pruning** — smart token-diet that strips tracking, analytics, base64, and telemetry noise
-- [x] **Advanced TLS-Fingerprint Spoofing** — Bypass strict WAFs (Cloudflare/Datadome) by perfectly mimicking Chrome's TLS signature.
-- [ ] **Batch mode** — extract from a list of URLs in parallel
+- [x] **Advanced TLS-Fingerprint Spoofing** — Bypass strict WAFs (Cloudflare/Datadome)
+- [x] **Batch mode** — extract from a list of URLs in parallel
+- [x] **MCP server** — expose extractors as Model Context Protocol tools for AI agents
 - [ ] **WASM build** — run SwipeNode inside browser-based AI agents
-- [ ] **MCP server** — expose extractors as Model Context Protocol tools
 
 ## Contributing
 
 Contributions are welcome. The codebase is intentionally small and approachable.
 
 ```bash
-git clone https://github.com/swipenode-local/swipenode.git
+git clone https://github.com/sirToby99/swipenode.git
 cd swipenode
 go build -o swipenode .
 go test ./...
 ```
-
-To add a new framework extractor:
-
-1. Add detection logic inside `parseStructuredData()` in `pkg/extractor/extractor.go`
-2. Store extracted data in the `result` map with a descriptive key
-3. Add corresponding tests in `pkg/extractor/extractor_test.go`
-4. Submit a PR
 
 ## Credits
 
@@ -209,7 +211,7 @@ SwipeNode builds on the following open-source libraries:
 
 TLS fingerprint spoofing is powered by [bogdanfinn/tls-client](https://github.com/bogdanfinn/tls-client), which is licensed under the **BSD 4-Clause License**:
 
-```
+```text
 Copyright (c) 2023, Bogdan Finn
 All rights reserved.
 
@@ -245,7 +247,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ## License
 
-```
+```text
 Copyright 2026 SwipeNode Contributors
 
 Licensed under the Apache License, Version 2.0 (the "License");
