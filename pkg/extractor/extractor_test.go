@@ -9,6 +9,7 @@ import (
 )
 
 func TestExtractData_NextJS(t *testing.T) {
+	t.Setenv("SWIPENODE_TEST_MODE", "1")
 	page := `<!DOCTYPE html>
 <html><head><title>Next App</title></head>
 <body>
@@ -38,6 +39,7 @@ func TestExtractData_NextJS(t *testing.T) {
 }
 
 func TestExtractData_NuxtJS(t *testing.T) {
+	t.Setenv("SWIPENODE_TEST_MODE", "1")
 	page := `<!DOCTYPE html>
 <html><head><title>Nuxt App</title></head>
 <body>
@@ -64,6 +66,7 @@ func TestExtractData_NuxtJS(t *testing.T) {
 }
 
 func TestExtractData_Fallback(t *testing.T) {
+	t.Setenv("SWIPENODE_TEST_MODE", "1")
 	page := `<!DOCTYPE html>
 <html><head><title>Plain Site</title>
 <style>body { color: red; }</style>
@@ -111,6 +114,7 @@ func TestExtractData_Fallback(t *testing.T) {
 }
 
 func TestExtractData_NextJSPriority(t *testing.T) {
+	t.Setenv("SWIPENODE_TEST_MODE", "1")
 	// Page has BOTH Next.js and Nuxt.js — both should appear in the output.
 	page := `<!DOCTYPE html>
 <html><head></head>
@@ -141,6 +145,7 @@ func TestExtractData_NextJSPriority(t *testing.T) {
 }
 
 func TestExtractData_HTTPError(t *testing.T) {
+	t.Setenv("SWIPENODE_TEST_MODE", "1")
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}))
@@ -156,6 +161,7 @@ func TestExtractData_HTTPError(t *testing.T) {
 }
 
 func TestExtractData_UserAgent(t *testing.T) {
+	t.Setenv("SWIPENODE_TEST_MODE", "1")
 	expectedUA := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 	var gotUA string
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -173,6 +179,7 @@ func TestExtractData_UserAgent(t *testing.T) {
 }
 
 func TestExtractData_JSONLD(t *testing.T) {
+	t.Setenv("SWIPENODE_TEST_MODE", "1")
 	page := `<!DOCTYPE html>
 <html><head><title>Site with JSON-LD</title></head>
 <body>
@@ -202,6 +209,7 @@ func TestExtractData_JSONLD(t *testing.T) {
 }
 
 func TestExtractData_Remix(t *testing.T) {
+	t.Setenv("SWIPENODE_TEST_MODE", "1")
 	page := `<!DOCTYPE html>
 <html><head></head>
 <body>

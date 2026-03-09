@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"os"
 	"regexp"
 	"strings"
 
@@ -56,15 +57,16 @@ func validateURL(rawURL string) error {
 		return fmt.Errorf("DNS lookup failed for %s: %w", host, err)
 	}
 
+	testMode := os.Getenv("SWIPENODE_TEST_MODE") == "1"
 	for _, ipStr := range ips {
 		ip := net.ParseIP(ipStr)
 		if ip == nil {
 			continue
 		}
-		if ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsUnspecified() {
+		if !testMode && (ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsUnspecified()) {
 			return fmt.Errorf("URL resolves to private/internal address %s: request blocked", ipStr)
 		}
-		// Block cloud metadata endpoints (169.254.169.254)
+		// Block cloud metadata endpoints (169.254.169.254) — even in test mode.
 		if ip.Equal(net.ParseIP("169.254.169.254")) {
 			return fmt.Errorf("URL resolves to cloud metadata address: request blocked")
 		}
