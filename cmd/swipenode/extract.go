@@ -3,6 +3,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/swipenode-local/swipenode/pkg/extractor"
@@ -17,8 +18,8 @@ var extractCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		data, err := extractor.ExtractData(extractURL, impersonate)
 		if err != nil {
-			fmt.Println("Fehler:", err)
-			return
+			fmt.Fprintln(os.Stderr, "Error:", err)
+			os.Exit(1)
 		}
 		fmt.Println(data)
 	},

@@ -4,6 +4,8 @@ package extractor
 import (
 	"encoding/json"
 	"fmt"
+	"net"
+	"net/url"
 	"regexp"
 	"strings"
 
@@ -42,9 +44,53 @@ func ExtractData(url string, browser string) (string, error) {
 	return fallbackCleanText(doc), nil
 }
 
+// validateURL checks that the target URL uses http(s) and does not resolve to
+// a private/internal IP address (SSRF protection).
+func validateURL(rawURL string) error {
+	parsed, err := url.Parse(rawURL)
+	if err != nil {
+		return fmt.Errorf("invalid URL: %w", err)
+	}
+
+	scheme := strings.ToLower(parsed.Scheme)
+	if scheme != "http" && scheme != "https" {
+		return fmt.Errorf("unsupported scheme %q: only http and https are allowed", parsed.Scheme)
+	}
+
+	host := parsed.Hostname()
+	if host == "" {
+		return fmt.Errorf("URL has no host")
+	}
+
+	ips, err := net.LookupHost(host)
+	if err != nil {
+		return fmt.Errorf("DNS lookup failed for %s: %w", host, err)
+	}
+
+	for _, ipStr := range ips {
+		ip := net.ParseIP(ipStr)
+		if ip == nil {
+			continue
+		}
+		if ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsUnspecified() {
+			return fmt.Errorf("URL resolves to private/internal address %s: request blocked", ipStr)
+		}
+		// Block cloud metadata endpoints (169.254.169.254)
+		if ip.Equal(net.ParseIP("169.254.169.254")) {
+			return fmt.Errorf("URL resolves to cloud metadata address: request blocked")
+		}
+	}
+
+	return nil
+}
+
 // fetchDocument performs an HTTP GET using a TLS-spoofed client that mimics
 // the given browser's fingerprint and returns a parsed goquery document.
-func fetchDocument(url string, browser string) (*goquery.Document, error) {
+func fetchDocument(rawURL string, browser string) (*goquery.Document, error) {
+	if err := validateURL(rawURL); err != nil {
+		return nil, err
+	}
+
 	var selectedProfile profiles.ClientProfile
 	switch strings.ToLower(browser) {
 	case "safari":
@@ -68,7 +114,7 @@ func fetchDocument(url string, browser string) (*goquery.Document, error) {
 		return nil, fmt.Errorf("creating tls client: %w", err)
 	}
 
-	req, err := fhttp.NewRequest("GET", url, nil)
+	req, err := fhttp.NewRequest("GET", rawURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("creating request: %w", err)
 	}
@@ -79,12 +125,12 @@ func fetchDocument(url string, browser string) (*goquery.Document, error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("fetching %s: %w", url, err)
+		return nil, fmt.Errorf("fetching %s: %w", rawURL, err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != fhttp.StatusOK {
-		return nil, fmt.Errorf("unexpected status %d for %s", resp.StatusCode, url)
+		return nil, fmt.Errorf("unexpected status %d for %s", resp.StatusCode, rawURL)
 	}
 
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
