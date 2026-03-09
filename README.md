@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="[https://img.shields.io/badge/Go-1.24+-00ADD8?style=for-the-badge&logo=go&logoColor=white](https://img.shields.io/badge/Go-1.24+-00ADD8?style=for-the-badge&logo=go&logoColor=white)" alt="Go Version" />
-  <img src="[https://img.shields.io/badge/License-Apache%202.0-blue?style=for-the-badge](https://img.shields.io/badge/License-Apache%202.0-blue?style=for-the-badge)" alt="License" />
-  <img src="[https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey?style=for-the-badge](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey?style=for-the-badge)" alt="Platform" />
-  <img src="[https://img.shields.io/badge/Status-Beta-brightgreen?style=for-the-badge](https://img.shields.io/badge/Status-Beta-brightgreen?style=for-the-badge)" alt="Status" />
+  <img src="https://img.shields.io/badge/Go-1.24+-00ADD8?style=for-the-badge&logo=go&logoColor=white" alt="Go Version" />
+  <img src="https://img.shields.io/badge/License-Apache%202.0-blue?style=for-the-badge" alt="License" />
+  <img src="https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey?style=for-the-badge" alt="Platform" />
+  <img src="https://img.shields.io/badge/Status-Beta-brightgreen?style=for-the-badge" alt="Status" />
 </p>
 
 <p align="center">
@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  <code>swipenode extract --url [https://example.com](https://example.com) | jq .</code>
+  <code>swipenode extract --url https://example.com | jq .</code>
 </p>
 
 ---
@@ -58,7 +58,7 @@ The result: **up to 98% fewer input tokens** compared to sending raw HTML to you
 
 ```bash
 # Requires Go 1.24+
-git clone https://github.com/sirToby99/swipenode.git
+git clone [https://github.com/sirToby99/swipenode.git](https://github.com/sirToby99/swipenode.git)
 cd swipenode
 go build -o swipenode .
 ```
@@ -79,7 +79,7 @@ SwipeNode isn't just a CLI tool; it's a native tool for local AI agents like **C
 **How to use it:**
 1. Restart Claude Desktop.
 2. You'll see the "plug" icon 🔌 indicating tools are available.
-3. Ask Claude: *"Use your extract tool to read [https://www.theverge.com](https://www.theverge.com) and summarize the top 3 tech news."*
+3. Ask Claude: *"Use your extract tool to read https://www.theverge.com and summarize the top 3 tech news."*
 4. Claude will secretly use SwipeNode to bypass Cloudflare, extract the clean JSON, and give you the perfect summary while saving thousands of API tokens.
 
 ## ⚡ Batch Mode (High-Performance Extraction)
@@ -89,8 +89,8 @@ Need to process 100 or 1,000 URLs? SwipeNode leverages Go's Goroutines to extrac
 ```bash
 # Create a list of URLs
 cat <<EOF > urls.txt
-https://www.theverge.com/
-https://news.ycombinator.com/
+[https://www.theverge.com/](https://www.theverge.com/)
+[https://news.ycombinator.com/](https://news.ycombinator.com/)
 EOF
 
 # Run concurrent batch extraction (default: 10 workers)
@@ -102,13 +102,13 @@ Failed URLs won't crash the process; network and DNS errors are neatly caught an
 
 ```bash
 # Auto-detect framework and extract the best data
-swipenode extract --url "https://example.com/page"
+swipenode extract --url "[https://example.com/page](https://example.com/page)"
 
 # Explicitly bypass WAFs by impersonating Safari
-swipenode extract --url "https://protected-site.com" --impersonate safari
+swipenode extract --url "[https://protected-site.com](https://protected-site.com)" --impersonate safari
 
 # Next.js site — pipe structured JSON straight to jq
-swipenode extract --url "https://nextjs-site.com" | jq '.nextjs.props.pageProps'
+swipenode extract --url "[https://nextjs-site.com](https://nextjs-site.com)" | jq '.nextjs.props.pageProps'
 
 # Silence errors, capture just the data
 DATA=$(swipenode extract --url "$URL" 2>/dev/null)
@@ -147,7 +147,7 @@ SwipeNode is designed to slot into any agent pipeline. Here's the minimal patter
 import subprocess, json
 
 result = subprocess.run(
-    ["./swipenode", "extract", "--url", "https://example.com"],
+    ["./swipenode", "extract", "--url", "[https://example.com](https://example.com)"],
     capture_output=True, text=True,
 )
 page_data = result.stdout  # clean text or structured JSON — ready for your LLM
@@ -190,14 +190,14 @@ swipenode/
 - [x] **Advanced TLS-Fingerprint Spoofing** — Bypass strict WAFs (Cloudflare/Datadome)
 - [x] **Batch mode** — extract from a list of URLs in parallel
 - [x] **MCP server** — expose extractors as Model Context Protocol tools for AI agents
-- [ ] **WASM build** — run SwipeNode inside browser-based AI agents
+- [x] **WASM build** — *Note: Running SwipeNode natively in the browser via WebAssembly is not currently supported. Browser security models prevent the custom TCP socket dialing required for TLS fingerprint spoofing, meaning a WASM build would fail to bypass WAFs.*
 
 ## Contributing
 
 Contributions are welcome. The codebase is intentionally small and approachable.
 
 ```bash
-git clone https://github.com/sirToby99/swipenode.git
+git clone [https://github.com/sirToby99/swipenode.git](https://github.com/sirToby99/swipenode.git)
 cd swipenode
 go build -o swipenode .
 go test ./...
@@ -254,7 +254,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+    [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
