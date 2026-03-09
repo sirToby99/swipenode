@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/swipenode-local/swipenode/pkg/extractor"
+	"github.com/sirToby99/swipenode/pkg/extractor"
 )
 
 var extractURL string

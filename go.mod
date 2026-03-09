@@ -1,4 +1,4 @@
-module github.com/swipenode-local/swipenode
+module github.com/sirToby99/swipenode
 
 go 1.24.7
 
