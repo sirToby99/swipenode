@@ -87,11 +87,26 @@ func TestExtractData_Fallback(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if !strings.Contains(data, "no_framework_data_found") {
-		t.Errorf("expected no_framework_data_found status, got: %s", data)
+	// Boilerplate elements should be stripped
+	if strings.Contains(data, "tracking") {
+		t.Error("expected <script> content to be removed")
 	}
-	if !json.Valid([]byte(data)) {
-		t.Errorf("expected valid JSON, got: %s", data)
+	if strings.Contains(data, "color: red") {
+		t.Error("expected <style> content to be removed")
+	}
+	if strings.Contains(data, "Menu Item") {
+		t.Error("expected <header>/<nav> content to be removed")
+	}
+	if strings.Contains(data, "Copyright") {
+		t.Error("expected <footer> content to be removed")
+	}
+
+	// Actual content should survive
+	if !strings.Contains(data, "Welcome to My Site") {
+		t.Errorf("expected main content to be preserved, got: %s", data)
+	}
+	if !strings.Contains(data, "main content of the page") {
+		t.Errorf("expected paragraph text to be preserved, got: %s", data)
 	}
 }
 

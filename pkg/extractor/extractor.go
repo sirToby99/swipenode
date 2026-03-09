@@ -289,14 +289,16 @@ func parseStructuredData(doc *goquery.Document) (string, error) {
 		}
 	})
 
+	// No structured data found — fall back to cleaned visible text.
 	if len(result) == 0 {
-		return `{"status":"no_framework_data_found"}`, nil
+		return fallbackCleanText(doc), nil
 	}
 
+	// Marshal to JSON, then prune tracking/base64/telemetry noise.
 	jsonBytes, err := json.MarshalIndent(result, "", "  ")
 	if err != nil {
 		return "", err
 	}
 
-	return string(jsonBytes), nil
+	return pruneJSON(string(jsonBytes)), nil
 }
