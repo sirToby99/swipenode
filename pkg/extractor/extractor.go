@@ -2,19 +2,28 @@
 package extractor
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net"
 	"net/url"
 	"os"
 	"regexp"
 	"strings"
+	"time"
 
 	fhttp "github.com/bogdanfinn/fhttp"
 	tls_client "github.com/bogdanfinn/tls-client"
 	"github.com/bogdanfinn/tls-client/profiles"
 	"github.com/PuerkitoBio/goquery"
 )
+
+// maxResponseBytes is the maximum HTTP response body size (50 MB).
+const maxResponseBytes = 50 << 20
+
+// maxPruneDepth is the maximum recursion depth for JSON pruning.
+const maxPruneDepth = 100
 
 // collapseWS matches two or more consecutive whitespace characters (including newlines).
 var collapseWS = regexp.MustCompile(`\s{2,}`)
@@ -35,50 +44,65 @@ func ExtractData(url string, browser string) (string, error) {
 }
 
 // validateURL checks that the target URL uses http(s) and does not resolve to
-// a private/internal IP address (SSRF protection).
-func validateURL(rawURL string) error {
+// a private/internal IP address (SSRF protection). It returns the first valid
+// resolved IP so callers can pin the connection to the validated address,
+// preventing DNS rebinding attacks.
+func validateURL(rawURL string) (string, error) {
 	parsed, err := url.Parse(rawURL)
 	if err != nil {
-		return fmt.Errorf("invalid URL: %w", err)
+		return "", fmt.Errorf("invalid URL: %w", err)
 	}
 
 	scheme := strings.ToLower(parsed.Scheme)
 	if scheme != "http" && scheme != "https" {
-		return fmt.Errorf("unsupported scheme %q: only http and https are allowed", parsed.Scheme)
+		return "", fmt.Errorf("unsupported scheme %q: only http and https are allowed", parsed.Scheme)
 	}
 
 	host := parsed.Hostname()
 	if host == "" {
-		return fmt.Errorf("URL has no host")
+		return "", fmt.Errorf("URL has no host")
 	}
 
-	ips, err := net.LookupHost(host)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	ips, err := net.DefaultResolver.LookupHost(ctx, host)
 	if err != nil {
-		return fmt.Errorf("DNS lookup failed for %s: %w", host, err)
+		return "", fmt.Errorf("DNS lookup failed for %s: %w", host, err)
 	}
 
 	testMode := os.Getenv("SWIPENODE_TEST_MODE") == "1"
+	var pinnedIP string
 	for _, ipStr := range ips {
 		ip := net.ParseIP(ipStr)
 		if ip == nil {
 			continue
 		}
 		if !testMode && (ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsUnspecified()) {
-			return fmt.Errorf("URL resolves to private/internal address %s: request blocked", ipStr)
+			return "", fmt.Errorf("URL resolves to private/internal address %s: request blocked", ipStr)
 		}
 		// Block cloud metadata endpoints (169.254.169.254) — even in test mode.
 		if ip.Equal(net.ParseIP("169.254.169.254")) {
-			return fmt.Errorf("URL resolves to cloud metadata address: request blocked")
+			return "", fmt.Errorf("URL resolves to cloud metadata address: request blocked")
+		}
+		if pinnedIP == "" {
+			pinnedIP = ipStr
 		}
 	}
 
-	return nil
+	if pinnedIP == "" {
+		return "", fmt.Errorf("DNS lookup returned no usable addresses for %s", host)
+	}
+
+	return pinnedIP, nil
 }
 
 // fetchDocument performs an HTTP GET using a TLS-spoofed client that mimics
 // the given browser's fingerprint and returns a parsed goquery document.
+// It pins the connection to the IP address validated by validateURL to prevent
+// DNS rebinding attacks.
 func fetchDocument(rawURL string, browser string) (*goquery.Document, error) {
-	if err := validateURL(rawURL); err != nil {
+	pinnedIP, err := validateURL(rawURL)
+	if err != nil {
 		return nil, err
 	}
 
@@ -89,10 +113,25 @@ func fetchDocument(rawURL string, browser string) (*goquery.Document, error) {
 	case "firefox":
 		selectedProfile = profiles.Firefox_120
 	case "chrome":
-		fallthrough
-	default:
 		selectedProfile = profiles.Chrome_120
+	default:
+		return nil, fmt.Errorf("unsupported browser %q: use chrome, safari, or firefox", browser)
 	}
+
+	// Rewrite the request URL to use the pinned IP, preserving the original
+	// Host header so TLS SNI and virtual hosting work correctly.
+	parsed, _ := url.Parse(rawURL) // already validated
+	originalHost := parsed.Host
+	port := parsed.Port()
+	if port == "" {
+		if parsed.Scheme == "https" {
+			port = "443"
+		} else {
+			port = "80"
+		}
+	}
+	parsed.Host = net.JoinHostPort(pinnedIP, port)
+	pinnedURL := parsed.String()
 
 	options := []tls_client.HttpClientOption{
 		tls_client.WithTimeoutSeconds(15),
@@ -105,11 +144,13 @@ func fetchDocument(rawURL string, browser string) (*goquery.Document, error) {
 		return nil, fmt.Errorf("creating tls client: %w", err)
 	}
 
-	req, err := fhttp.NewRequest("GET", rawURL, nil)
+	req, err := fhttp.NewRequest("GET", pinnedURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("creating request: %w", err)
 	}
 
+	// Restore the original Host header for TLS SNI and virtual hosting.
+	req.Header.Set("Host", originalHost)
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
 	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8")
 	req.Header.Set("Accept-Language", "en-US,en;q=0.9")
@@ -120,11 +161,11 @@ func fetchDocument(rawURL string, browser string) (*goquery.Document, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != fhttp.StatusOK {
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return nil, fmt.Errorf("unexpected status %d for %s", resp.StatusCode, rawURL)
 	}
 
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	doc, err := goquery.NewDocumentFromReader(io.LimitReader(resp.Body, maxResponseBytes))
 	if err != nil {
 		return nil, fmt.Errorf("parsing HTML: %w", err)
 	}
@@ -184,7 +225,7 @@ func pruneJSON(rawJSON string) string {
 		return rawJSON // unparseable → return as-is
 	}
 
-	pruned := pruneValue(data, "")
+	pruned := pruneValue(data, "", 0)
 	if pruned == nil {
 		return rawJSON
 	}
@@ -198,7 +239,12 @@ func pruneJSON(rawJSON string) string {
 
 // pruneValue recursively walks a decoded JSON value and applies pruning rules.
 // parentKey is the map key that led to this value (empty at the root).
-func pruneValue(v interface{}, parentKey string) interface{} {
+// depth tracks recursion depth to prevent stack overflow on deeply nested JSON.
+func pruneValue(v interface{}, parentKey string, depth int) interface{} {
+	if depth > maxPruneDepth {
+		return v // stop recursing, return as-is
+	}
+
 	switch val := v.(type) {
 	case map[string]interface{}:
 		out := make(map[string]interface{}, len(val))
@@ -206,7 +252,7 @@ func pruneValue(v interface{}, parentKey string) interface{} {
 			if isJunkKey(k) {
 				continue
 			}
-			pruned := pruneValue(child, k)
+			pruned := pruneValue(child, k, depth+1)
 			if pruned != nil {
 				out[k] = pruned
 			}
@@ -219,7 +265,7 @@ func pruneValue(v interface{}, parentKey string) interface{} {
 	case []interface{}:
 		out := make([]interface{}, 0, len(val))
 		for _, child := range val {
-			pruned := pruneValue(child, "")
+			pruned := pruneValue(child, "", depth+1)
 			if pruned != nil {
 				out = append(out, pruned)
 			}

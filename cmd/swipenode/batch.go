@@ -6,11 +6,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 
 	"github.com/spf13/cobra"
-	"github.com/swipenode-local/swipenode/pkg/extractor"
+	"github.com/sirToby99/swipenode/pkg/extractor"
 )
 
 // BatchResult holds the outcome of a single URL extraction.
@@ -31,6 +32,21 @@ var batchCmd = &cobra.Command{
 	Use:   "batch",
 	Short: "Extract structured data from a list of URLs concurrently",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		// Validate concurrency bounds.
+		if batchConcurrency < 1 {
+			batchConcurrency = 1
+		}
+		if batchConcurrency > 50 {
+			return fmt.Errorf("concurrency %d exceeds maximum of 50", batchConcurrency)
+		}
+
+		// Validate output path: reject absolute paths and traversal.
+		cleanOut := filepath.Clean(batchOut)
+		if filepath.IsAbs(cleanOut) || strings.HasPrefix(cleanOut, "..") {
+			return fmt.Errorf("invalid output path %q: must be a relative path within the current directory", batchOut)
+		}
+		batchOut = cleanOut
+
 		// Read the input file.
 		f, err := os.Open(batchFile)
 		if err != nil {

@@ -8,7 +8,7 @@ import (
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 	"github.com/spf13/cobra"
-	"github.com/swipenode-local/swipenode/pkg/extractor"
+	"github.com/sirToby99/swipenode/pkg/extractor"
 )
 
 var mcpCmd = &cobra.Command{
