@@ -4,6 +4,8 @@ go 1.24.7
 
 require (
 	github.com/PuerkitoBio/goquery v1.11.0
+	github.com/bogdanfinn/fhttp v0.6.8
+	github.com/bogdanfinn/tls-client v1.14.0
 	github.com/spf13/cobra v1.10.2
 )
 
@@ -12,9 +14,7 @@ require (
 	github.com/andybalholm/cascadia v1.3.3 // indirect
 	github.com/bdandy/go-errors v1.2.2 // indirect
 	github.com/bdandy/go-socks4 v1.2.3 // indirect
-	github.com/bogdanfinn/fhttp v0.6.8 // indirect
 	github.com/bogdanfinn/quic-go-utls v1.0.9-utls // indirect
-	github.com/bogdanfinn/tls-client v1.14.0 // indirect
 	github.com/bogdanfinn/utls v1.7.7-barnius // indirect
 	github.com/bogdanfinn/websocket v1.5.5-barnius // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
