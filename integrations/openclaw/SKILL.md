@@ -49,3 +49,8 @@ The tool will output a JSON object to stdout.
 1. If you see keys like `"nextjs"`, `"json_ld"`, or `"nuxtjs_raw"`, parse this structured data to answer the user's request.
 2. If it's a legacy site, look for the `"text"` key, which contains the clean, readable content.
 3. If it contains `"error"`, report the network issue to the user.
+
+---
+
+### Legal & Credits
+This product includes software developed by Bogdan Finn (bogdanfinn/tls-client).
