@@ -2,7 +2,7 @@
 name: swipenode
 description: Give your agent the superpower to read the modern web without getting blocked by Cloudflare. Extracts clean JSON, saves 98% of LLM tokens, and executes zero malicious JS.
 author: sirToby99
-version: 1.0.2
+version: 1.0.3
 repository: https://github.com/sirToby99/swipenode
 ---
 
@@ -19,11 +19,11 @@ To address security validations:
 * **Fully Open Source:** The source code is completely public and auditable at [github.com/sirToby99/swipenode](https://github.com/sirToby99/swipenode).
 * **How the WAF Bypass works:** SwipeNode does NOT use exploits. It simply uses the open-source `bogdanfinn/tls-client` Go library to mimic the TLS handshake signature of a standard Chrome/Safari browser.
 * **Safer than Browsers:** Because SwipeNode does not use a headless browser engine, it *cannot* execute malicious JavaScript payloads from target websites. It only parses static HTML/JSON, making it inherently safer for autonomous agents.
-* **Provenance:** The `install.sh` script explicitly uses `go install` to pull the public code directly from GitHub, ensuring no hidden binaries are executed.
+* **Provenance:** The `install.sh` script explicitly uses `go install` with a pinned version tag to pull the public code directly from GitHub safely.
 
 ### 🔥 Why your Agent needs this:
 * 🥷 **Bypasses Cloudflare & WAFs:** Native TLS-fingerprint spoofing.
-* 💰 **Saves 98% of LLM Tokens:** Prunes tracking pixels, base64 data, and boilerplate UI noise, returning only clean JSON or text.
+* 💰 **Saves 98% of LLM Tokens:** Prunes tracking pixels, base64 data, and boilerplate UI noise.
 * 🛡️ **Zero-JS Execution:** Immune to browser-based prompt injections.
 
 ---
@@ -31,7 +31,12 @@ To address security validations:
 ## 🤖 Instructions for the AI Agent
 
 **When to use this skill:**
-Whenever the user asks you to read a webpage, summarize an article, check the news, or extract data from a URL. Do NOT use standard HTTP clients (`curl`, `wget`) if this tool is available!
+Whenever the user asks you to read a webpage, summarize an article, check the news, or extract data from a URL. You should generally prefer this tool over standard HTTP clients (`curl`, `wget`) because it handles structured data efficiently.
+
+**Ethical & Operational Guidelines:**
+* Ensure your usage respects the target website's Terms of Service and legal constraints.
+* Do not use this tool to aggressively scrape, spam, or overwhelm target servers. 
+* Act responsibly as a user-driven autonomous agent.
 
 **How to use it:**
 Execute the following command in the terminal:
