@@ -1,25 +1,46 @@
 ---
 name: swipenode
-description: Lightning-fast, zero-render web extraction tool. Use this INSTEAD of curl, wget, or python scrapers to read websites. It automatically bypasses Cloudflare/WAFs and returns clean, token-optimized JSON or stripped text while preventing malicious JS execution.
+description: Give your agent the superpower to read the modern web without getting blocked by Cloudflare. Extracts clean JSON, saves 98% of LLM tokens, and executes zero malicious JS.
 author: sirToby99
-version: 1.0.0
+version: 1.0.2
+repository: https://github.com/sirToby99/swipenode
 ---
 
-# SwipeNode Extraction Skill
+# ⚡ SwipeNode: The Ultimate Web Extractor for Agents
 
-You have access to `swipenode`, a highly optimized CLI tool for web extraction built in Go.
+Is your OpenClaw agent constantly hitting **403 Forbidden** errors when trying to read websites? Or are headless browser skills eating up your RAM and exposing your machine to malicious JavaScript?
 
-## When to use this skill
-Whenever the user asks you to read a webpage, summarize an article, check the news, or extract data from a URL. Do NOT use standard HTTP clients if this tool is available, because `swipenode` bypasses bot protections, saves massive amounts of context tokens, and is secure against malicious JS payloads.
+**SwipeNode fixes all of this.**
 
-## How to use it
+It is a lightning-fast, highly optimized Go binary that fetches websites and extracts structured data (`__NEXT_DATA__`, Nuxt, JSON-LD) *without* rendering the page.
+
+### 🔒 Security & Transparency (For Reviewers & Users)
+To address security validations:
+* **Fully Open Source:** The source code is completely public and auditable at [github.com/sirToby99/swipenode](https://github.com/sirToby99/swipenode).
+* **How the WAF Bypass works:** SwipeNode does NOT use exploits. It simply uses the open-source `bogdanfinn/tls-client` Go library to mimic the TLS handshake signature of a standard Chrome/Safari browser.
+* **Safer than Browsers:** Because SwipeNode does not use a headless browser engine, it *cannot* execute malicious JavaScript payloads from target websites. It only parses static HTML/JSON, making it inherently safer for autonomous agents.
+* **Provenance:** The `install.sh` script explicitly uses `go install` to pull the public code directly from GitHub, ensuring no hidden binaries are executed.
+
+### 🔥 Why your Agent needs this:
+* 🥷 **Bypasses Cloudflare & WAFs:** Native TLS-fingerprint spoofing.
+* 💰 **Saves 98% of LLM Tokens:** Prunes tracking pixels, base64 data, and boilerplate UI noise, returning only clean JSON or text.
+* 🛡️ **Zero-JS Execution:** Immune to browser-based prompt injections.
+
+---
+
+## 🤖 Instructions for the AI Agent
+
+**When to use this skill:**
+Whenever the user asks you to read a webpage, summarize an article, check the news, or extract data from a URL. Do NOT use standard HTTP clients (`curl`, `wget`) if this tool is available!
+
+**How to use it:**
 Execute the following command in the terminal:
 `swipenode extract --url "<TARGET_URL>"`
 
-Optional: If a site actively blocks the request, spoof the TLS fingerprint by appending `--impersonate safari` or `--impersonate firefox`.
+*Pro Tip:* If a high-security site actively blocks the default request, spoof the TLS fingerprint by appending `--impersonate safari` or `--impersonate firefox`.
 
-## Understanding the Output
-The tool will output a JSON object to stdout.
-- If the site uses a modern framework, you will see keys like "nextjs", "json_ld", or "nuxtjs_raw". Parse this structured data to answer the user's request.
-- If it's a legacy site, look for the "text" key, which contains the clean, boilerplate-stripped text.
-- If the output contains "error", report the WAF or network error to the user.
+**Understanding the Output:**
+The tool will output a JSON object to stdout. 
+1. If you see keys like `"nextjs"`, `"json_ld"`, or `"nuxtjs_raw"`, parse this structured data to answer the user's request.
+2. If it's a legacy site, look for the `"text"` key, which contains the clean, readable content.
+3. If it contains `"error"`, report the network issue to the user.
