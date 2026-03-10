@@ -82,6 +82,12 @@ SwipeNode isn't just a CLI tool; it's a native tool for local AI agents like **C
 3. Ask Claude: *"Use your extract tool to read https://www.theverge.com and summarize the top 3 tech news."*
 4. Claude will secretly use SwipeNode to bypass Cloudflare, extract the clean JSON, and give you the perfect summary while saving thousands of API tokens.
 
+## OpenClaw Integration
+
+SwipeNode can be used as a secure, JavaScript-free extraction skill for [OpenClaw](https://github.com/openclaw) agents. Instead of relying on `curl`, `wget`, or heavyweight browser automation, OpenClaw agents can call SwipeNode to fetch and extract structured web data with built-in WAF bypass and token optimization.
+
+See [`integrations/openclaw/SKILL.md`](integrations/openclaw/SKILL.md) for the skill definition and [`integrations/openclaw/install.sh`](integrations/openclaw/install.sh) for a one-step installation script.
+
 ## ⚡ Batch Mode (High-Performance Extraction)
 
 Need to process 100 or 1,000 URLs? SwipeNode leverages Go's Goroutines to extract data concurrently without eating up your RAM like Headless Chrome would.
