@@ -2,7 +2,7 @@
 name: swipenode
 description: Give your agent the superpower to read the modern web without getting blocked by Cloudflare. Extracts clean JSON, saves 98% of LLM tokens, and executes zero malicious JS.
 author: sirToby99
-version: 1.0.3
+version: 1.6.1
 repository: https://github.com/sirToby99/swipenode
 ---
 
