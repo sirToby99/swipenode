@@ -1,18 +1,11 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/bash
+set -e
 
-REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+echo "Installing SwipeNode from the official open-source GitHub repository..."
+echo "Source: https://github.com/sirToby99/swipenode"
 
-echo "Building swipenode..."
-cd "$REPO_ROOT"
-go build -o swipenode .
+# Install directly via Go (this proves provenance and pulls the public source code)
+go install github.com/sirToby99/swipenode@latest
 
-if [ "$(id -u)" -eq 0 ]; then
-    INSTALL_DIR="/usr/local/bin"
-else
-    INSTALL_DIR="$HOME/.local/bin"
-    mkdir -p "$INSTALL_DIR"
-fi
-
-mv swipenode "$INSTALL_DIR/swipenode"
-echo "Installed swipenode to $INSTALL_DIR/swipenode"
+echo "✅ SwipeNode successfully installed to your Go bin directory (usually ~/go/bin)."
+echo "Make sure ~/go/bin is in your system PATH!"
