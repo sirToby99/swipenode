@@ -43,6 +43,23 @@ func ExtractData(url string, browser string) (string, error) {
 	return parseStructuredData(doc)
 }
 
+// ExtractDataFromFile reads a local HTML file and attempts to extract structured data
+// using the same cascade as ExtractData.
+func ExtractDataFromFile(filePath string) (string, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return "", fmt.Errorf("opening file: %w", err)
+	}
+	defer file.Close()
+
+	doc, err := goquery.NewDocumentFromReader(file)
+	if err != nil {
+		return "", fmt.Errorf("parsing HTML: %w", err)
+	}
+
+	return parseStructuredData(doc)
+}
+
 // validateURL checks that the target URL uses http(s) and does not resolve to
 // a private/internal IP address (SSRF protection). It returns the first valid
 // resolved IP so callers can pin the connection to the validated address,

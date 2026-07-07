@@ -104,6 +104,16 @@ swipenode batch --file urls.txt --concurrency 5 --out results.json
 ```
 Failed URLs won't crash the process; network and DNS errors are neatly caught and logged per-URL in the resulting JSON array.
 
+## 🌐 API Server & Monetization (x402)
+
+SwipeNode includes a built-in HTTP server (`swipenode serve`) that exposes a `/api/extract` endpoint. It also serves a built-in responsive landing page with an ROI calculator. It is specifically designed to be deployed securely behind the **Cloudflare Monetization Gateway**. 
+By exposing the API via a Cloudflare Tunnel, autonomous AI agents can pay for API access in real-time via stablecoins using the open **x402 protocol**—no API keys, subscriptions, or complex Stripe integrations required.
+
+```bash
+# Start the API server on port 8080 (serves /api/extract and static landing page)
+swipenode serve
+```
+
 ## CLI Usage (Single Extraction)
 
 ```bash
@@ -126,6 +136,7 @@ DATA=$(swipenode extract --url "$URL" 2>/dev/null)
 swipenode
 ├── extract              Extract structured data from a single URL
 ├── batch                Extract data from multiple URLs concurrently
+├── serve                Start the HTTP API server (x402-ready)
 ├── mcp                  Start the stdio Model Context Protocol server
 ├── install-mcp          Auto-configure SwipeNode for Claude Desktop
 └── help                 Help about any command
@@ -169,8 +180,9 @@ swipenode/
 ├── cmd/
 │   └── swipenode/
 │       ├── root.go             # Cobra root command
-│       ├── extract.go          # Single URL extraction
+│       ├── extract.go          # Single URL extraction & Offline files
 │       ├── batch.go            # Concurrent worker pool extraction
+│       ├── serve.go            # HTTP API server & static hosting
 │       ├── mcp.go              # Stdio MCP server
 │       └── install_mcp.go      # Auto-installer for Claude Desktop
 ├── pkg/
