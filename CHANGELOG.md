@@ -16,6 +16,9 @@ All notable release-facing changes are documented here.
 
 - Documentation now describes supported extraction behavior and limitations conservatively.
 - Release archives now include separate checksum-verified assets for the standalone CLI and the Entire plugin across the existing platform matrix.
+- The primary installer now authenticates the complete software Trust chain,
+  signed checksum manifest and selected archive hash before extraction, and
+  cannot execute the downloaded candidate as part of verification.
 
 ## [2.0.1] - pending
 

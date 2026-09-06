@@ -15,30 +15,29 @@ This identity is exclusively for SwipeNode software releases. It is not a Knowle
 
 ## Trust bootstrap and verification
 
-For an update, obtain the base64 Ed25519 software trust root and signed trust
-metadata through the documented channels. The root must be pinned independently;
-never trust a replacement root merely because the release server supplied it.
-Use an already trusted SwipeNode binary as the metadata verifier:
+For first installation and updates, use the repository's `scripts/install.sh`
+with `scripts/verify-software-trust.py`. The source-auditable bootstrap verifier
+uses OpenSSL Ed25519 verification and does not execute a candidate SwipeNode
+binary. The installer downloads and compares the Trust Root, signed metadata
+and published release key from the repository and Managed Knowledge channels,
+then authenticates the metadata and key authorization:
 
 ```sh
-SWIPENODE_SOFTWARE_TRUST_ROOT_FILE=/secure/trust/software-root.pub \
-SWIPENODE_SOFTWARE_TRUST_METADATA_FILE=/secure/trust/software-release.json \
-SWIPENODE_TRUST_VERIFIER=/usr/local/bin/swipenode \
-SWIPENODE_VERSION=v2.1.0 \
-sh scripts/install.sh
+SWIPENODE_TRUST_BOOTSTRAP_VERIFIER="$PWD/scripts/verify-software-trust.py" \
+  sh scripts/install.sh
 ```
 
 The verifier derives a temporary OpenSSH allowed-signers file only from active
 `content_signing` keys in authenticated metadata. A `trust_metadata`-only root
 cannot sign a software artifact. Revoked keys are rejected conservatively,
 including for historical signatures, and a version below the signed minimum is
-rejected. `SWIPENODE_ALLOW_DOWNGRADE=1` is the explicit operator recovery
-override for only the minimum-version check; it does not bypass metadata
-authentication, signature verification, key usage, validity, or revocation.
+rejected. The bootstrap installer has no downgrade or Trust-time bypass.
 
-For the first installation or a fully offline recovery with no already trusted
-verifier, obtain the software-release SSH public key through an independent
-channel. Record and compare its fingerprint out of band:
+For a fully offline/manual installation, obtain the Trust Root, signed metadata,
+release public key, checksum manifest, detached signature and archive through
+approved channels. Run `scripts/verify-software-trust.py` first to produce the
+authorized-signers file, then verify the SSHSIG and archive hash. Record and
+compare public fingerprints out of band:
 
 ```sh
 ssh-keygen -lf swipenode-release.pub
@@ -52,24 +51,14 @@ sh scripts/verify-release-checksums.sh \
 sha256sum -c checksums.txt
 ```
 
-The direct-key bootstrap path is intentionally explicit and fails closed if the
-signature is absent, malformed, tampered, or signed by another key:
-
-```sh
-SWIPENODE_RELEASE_PUBLIC_KEY_FILE=/secure/trust/swipenode-release.pub \
-SWIPENODE_ALLOW_DIRECT_RELEASE_KEY=1 \
-sh scripts/install.sh
-```
-
 `scripts/verify-release-checksums.sh` remains the offline/manual verification
-tool. Neither installer path downloads private keys, and trust metadata contains
-public keys only.
 
 OpenSSH SSHSIG is used rather than a SwipeNode-specific artifact-signature
 encoding. `scripts/test-installer-trust-chain.sh` uses ephemeral keys and covers
-authenticated metadata, tampering, revocation, unauthorized replacement,
-rotation, anti-downgrade, bad signatures, bad artifact hashes, manual offline
-verification, and secret-material exclusion. No production key is committed or
+authenticated metadata, channel disagreement, tampering, revocation,
+unauthorized replacement, rotation, anti-downgrade, bad signatures, bad artifact
+hashes, pre-execution ordering, manual offline verification, and secret-material
+exclusion. No production key is committed or
 required to run tests. Production release publication remains blocked until
 repository administrators configure protected signing identities and publish
 the matching roots through independent trusted channels.

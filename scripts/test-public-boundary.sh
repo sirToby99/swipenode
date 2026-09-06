@@ -11,6 +11,9 @@ done
 test -f PUBLIC_EXPORT_PROVENANCE.json
 test "$(jq -r .schema_version PUBLIC_EXPORT_PROVENANCE.json)" = swipenode.public-export-provenance.v1
 test "$(jq -r .product_source_sha PUBLIC_EXPORT_PROVENANCE.json)" = 3a38dafb97a163e63b6e8fe5fce452309d5b8ea4
+test -x scripts/install.sh
+test -x scripts/verify-software-trust.py
+jq -e '.schema_version == "swipenode.client-release-discovery.v1" and .status == "private_beta" and (.verification_order == ["software_trust_metadata", "release_key_authorization", "checksum_manifest_signature", "platform_archive_sha256"])' release-discovery.json >/dev/null
 test -z "$(find . -type l -print -quit)"
 
 private_pattern='/opt/'"swipenode"'|/var/lib/'"swipenode"'|swipenode-'"admin"'\.service|swipenode-'"managed"'\.service|cloudflare'"d"'|Cloudflare Tun'"nel"'|127\.0\.0\.1:808[13]'

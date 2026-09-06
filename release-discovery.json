@@ -1,0 +1,18 @@
+{
+  "schema_version": "swipenode.client-release-discovery.v1",
+  "status": "private_beta",
+  "release_channel": "https://github.com/sirToby99/swipenode/releases",
+  "primary_installer": "https://raw.githubusercontent.com/sirToby99/swipenode/main/scripts/install.sh",
+  "bootstrap_verifier": "https://raw.githubusercontent.com/sirToby99/swipenode/main/scripts/verify-software-trust.py",
+  "trust_channels": {
+    "repository": "https://github.com/sirToby99/swipenode/tree/main/trust/software",
+    "managed": "https://knowledge.swipenode.dev/.well-known/swipenode/software/"
+  },
+  "verification_order": [
+    "software_trust_metadata",
+    "release_key_authorization",
+    "checksum_manifest_signature",
+    "platform_archive_sha256"
+  ],
+  "execution_policy": "The downloaded SwipeNode binary must not be extracted or executed until every verification step succeeds."
+}

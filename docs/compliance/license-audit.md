@@ -56,13 +56,13 @@ The vulnerable selections were replaced by `x/net v0.58.0` and selected `x/text 
 
 Knowledge Pack signatures and software-release signatures are separate identities. Release CI computes SHA-256 for every archive, signs the exact checksum manifest with an independently managed Ed25519 key using the established OpenSSH SSHSIG format and namespace `swipenode-release`, and self-verifies against the configured release public key before publication. The signing key is held only in protected release configuration and a mode-0600 ephemeral runner file; it is never archived or uploaded.
 
-For normal updates the installer requires independently pinned trust-root
-material, root-authenticated `software_release` metadata, and an already trusted
-SwipeNode verifier. It enforces signer usage, revocation, rotation, and the
-signed minimum version before authenticating `checksums.txt`, then validates the
-selected archive SHA-256. An explicit direct public-key path remains for initial
-bootstrap and offline recovery. Missing, tampered, wrong-key, revoked, or
-malformed inputs fail closed. See [`release-security.md`](../release-security.md).
+The installer compares the repository and Managed Knowledge Trust channels,
+then its source-auditable bootstrap verifier authenticates root-signed
+`software_release` metadata without executing the candidate binary. It enforces
+signer usage, revocation, rotation, and the signed minimum version before
+authenticating `checksums.txt`, then validates the selected archive SHA-256.
+Missing, disagreeing, tampered, wrong-key, revoked, or malformed inputs fail
+closed. See [`release-security.md`](../release-security.md).
 Production publishing remains administratively blocked until maintainers
 configure the protected keys and publish roots/fingerprints through independent
 channels; tests need no production key.
