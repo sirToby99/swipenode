@@ -1,13 +1,5 @@
-# Binary
+/dist/
 /swipenode
-/swipenode.exe
-
-# Environment files
-.env
-.env.*
-
-# Private keys and certificates
-*.pem
-*.key
-*.p12
-*.pfx
+/entire-swipenode
+*.exe
+verification-workspace/

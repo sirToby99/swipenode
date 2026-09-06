@@ -1,0 +1,547 @@
+{
+  "spdxVersion": "SPDX-2.3",
+  "dataLicense": "CC0-1.0",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "SwipeNode release dependency SBOM",
+  "documentNamespace": "https://swipenode.dev/sbom/039d37f7132c254c8f79ca45e5831878a9b4d814a179f3bc14f98f96761c8093",
+  "creationInfo": {
+    "created": "2026-09-01T00:00:00Z",
+    "creators": [
+      "Tool: swipenode-compliance-sbom/1"
+    ]
+  },
+  "documentDescribes": [
+    "SPDXRef-Package-SwipeNode"
+  ],
+  "packages": [
+    {
+      "name": "SwipeNode",
+      "SPDXID": "SPDXRef-Package-SwipeNode",
+      "versionInfo": "e893703f3dc404765108a27a0c70b3811a5564d8",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "LicenseRef-Functional-Source-License-1.1",
+      "licenseDeclared": "LicenseRef-Functional-Source-License-1.1",
+      "copyrightText": "Copyright 2026 SwipeNode Contributors",
+      "comment": "Source audit target; release binaries are built by the pinned release toolchain."
+    },
+    {
+      "name": "Go standard library and runtime",
+      "SPDXID": "SPDXRef-Package-Go-Standard-Library",
+      "versionInfo": "go1.25.13",
+      "downloadLocation": "https://go.dev/dl/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "comment": "Ship the Go LICENSE and PATENTS text in third-party notices."
+    },
+    {
+      "name": "github.com/PuerkitoBio/goquery",
+      "SPDXID": "SPDXRef-Package-github.com-PuerkitoBio-goquery",
+      "versionInfo": "v1.11.0",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "8d9ee9c0c4172084dc517347f372cb93eb7195a132e8d54e7d3b8fe37c717eac"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/PuerkitoBio/goquery@v1.11.0"
+        }
+      ],
+      "comment": "direct=true; release_targets=swipenode; risk=GREEN; action=Reproduce license text."
+    },
+    {
+      "name": "github.com/andybalholm/cascadia",
+      "SPDXID": "SPDXRef-Package-github.com-andybalholm-cascadia",
+      "versionInfo": "v1.3.3",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-2-Clause",
+      "licenseDeclared": "BSD-2-Clause",
+      "copyrightText": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "006d981ebcc9226e01675f62c09fc302e6ba06d977230257f95238924b52d4b3"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/andybalholm/cascadia@v1.3.3"
+        }
+      ],
+      "comment": "direct=false; release_targets=swipenode; risk=GREEN; action=Reproduce license text."
+    },
+    {
+      "name": "github.com/bahlo/generic-list-go",
+      "SPDXID": "SPDXRef-Package-github.com-bahlo-generic-list-go",
+      "versionInfo": "v0.2.0",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "e6ccff10400afa5b39c05f8d7aa0e9939fa235d3035eb877cf79cf9c7d56be09"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/bahlo/generic-list-go@v0.2.0"
+        }
+      ],
+      "comment": "direct=false; release_targets=swipenode; risk=GREEN; action=Reproduce license text."
+    },
+    {
+      "name": "github.com/buger/jsonparser",
+      "SPDXID": "SPDXRef-Package-github.com-buger-jsonparser",
+      "versionInfo": "v1.1.2",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "7eba87ab0ee8b6855b93933c2e513f2fb1d39c8ab6bfd457e84278f22f40c499"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/buger/jsonparser@v1.1.2"
+        }
+      ],
+      "comment": "direct=false; release_targets=swipenode; risk=GREEN; action=Reproduce license text."
+    },
+    {
+      "name": "github.com/google/uuid",
+      "SPDXID": "SPDXRef-Package-github.com-google-uuid",
+      "versionInfo": "v1.6.0",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "348bda24330eb231c0f27d630212d2833ac0cf2d4782bfa136b6f9edefbde05d"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/google/uuid@v1.6.0"
+        }
+      ],
+      "comment": "direct=false; release_targets=swipenode; risk=GREEN; action=Reproduce license text."
+    },
+    {
+      "name": "github.com/inconshreveable/mousetrap",
+      "SPDXID": "SPDXRef-Package-github.com-inconshreveable-mousetrap",
+      "versionInfo": "v1.1.0",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "c0dfb1e0d546a4cb0eec4ad49ff994237bc4a04e89b75dd7dacd1bab0a7db5cf"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/inconshreveable/mousetrap@v1.1.0"
+        }
+      ],
+      "comment": "direct=false; release_targets=swipenode-windows,entire-swipenode-windows; risk=GREEN; action=Reproduce license text and mark modified files if applicable."
+    },
+    {
+      "name": "github.com/invopop/jsonschema",
+      "SPDXID": "SPDXRef-Package-github.com-invopop-jsonschema",
+      "versionInfo": "v0.13.0",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "2afa680095848d1dee0fd29b9b61d6266aac11a1edf25054a5dd2a1dc222db51"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/invopop/jsonschema@v0.13.0"
+        }
+      ],
+      "comment": "direct=false; release_targets=swipenode; risk=GREEN; action=Reproduce license text."
+    },
+    {
+      "name": "github.com/mailru/easyjson",
+      "SPDXID": "SPDXRef-Package-github.com-mailru-easyjson",
+      "versionInfo": "v0.7.7",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "506600bcac5edec06c103ccef1979639294841f5859716f32d97bb87015446bd"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/mailru/easyjson@v0.7.7"
+        }
+      ],
+      "comment": "direct=false; release_targets=swipenode; risk=GREEN; action=Reproduce license text."
+    },
+    {
+      "name": "github.com/mark3labs/mcp-go",
+      "SPDXID": "SPDXRef-Package-github.com-mark3labs-mcp-go",
+      "versionInfo": "v0.45.0",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "b344bca91ffd7d6690de91f1cfba66d6e4340ebb30a129d12312888db890b647"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/mark3labs/mcp-go@v0.45.0"
+        }
+      ],
+      "comment": "direct=true; release_targets=swipenode; risk=GREEN; action=Reproduce license text."
+    },
+    {
+      "name": "github.com/spf13/cast",
+      "SPDXID": "SPDXRef-Package-github.com-spf13-cast",
+      "versionInfo": "v1.7.1",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "72e3446a005010758dd459db1848c25cbdaccd8117a9f24f6cfd8735469c6bd6"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/spf13/cast@v1.7.1"
+        }
+      ],
+      "comment": "direct=false; release_targets=swipenode; risk=GREEN; action=Reproduce license text."
+    },
+    {
+      "name": "github.com/spf13/cobra",
+      "SPDXID": "SPDXRef-Package-github.com-spf13-cobra",
+      "versionInfo": "v1.10.2",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "0cc4d3a27c799bae4873418ea11636735e9609b1f138ec3ac717b3b8b681a5c5"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/spf13/cobra@v1.10.2"
+        }
+      ],
+      "comment": "direct=true; release_targets=swipenode,entire-swipenode; risk=GREEN; action=Reproduce license text and mark modified files if applicable."
+    },
+    {
+      "name": "github.com/spf13/pflag",
+      "SPDXID": "SPDXRef-Package-github.com-spf13-pflag",
+      "versionInfo": "v1.0.9",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "f5ec5a41a30e0b07df2a28a2624ebf06775406ffa245588d5bee2510c8b43ef6"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/spf13/pflag@v1.0.9"
+        }
+      ],
+      "comment": "direct=false; release_targets=swipenode,entire-swipenode; risk=GREEN; action=Reproduce license text."
+    },
+    {
+      "name": "github.com/wk8/go-ordered-map/v2",
+      "SPDXID": "SPDXRef-Package-github.com-wk8-go-ordered-map-v2",
+      "versionInfo": "v2.1.8",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "e61fc1507bbdde88f880876f1c71c6b127124cc8a37f1e4f798904fdf2606e97"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/wk8/go-ordered-map/v2@v2.1.8"
+        }
+      ],
+      "comment": "direct=false; release_targets=swipenode; risk=GREEN; action=Reproduce license text and mark modified files if applicable."
+    },
+    {
+      "name": "github.com/yosida95/uritemplate/v3",
+      "SPDXID": "SPDXRef-Package-github.com-yosida95-uritemplate-v3",
+      "versionInfo": "v3.0.2",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "11ddceca3f72ae68bdd3cefe35ccee2f9070908738c2f4dbe7320cf9424f1b3e"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/github.com/yosida95/uritemplate/v3@v3.0.2"
+        }
+      ],
+      "comment": "direct=false; release_targets=swipenode; risk=GREEN; action=Reproduce license text."
+    },
+    {
+      "name": "golang.org/x/net",
+      "SPDXID": "SPDXRef-Package-golang.org-x-net",
+      "versionInfo": "v0.58.0",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "ca7586eeba988b871ca5312e3d9d901961e4b5510cf433028fdcb30c4d10ed3a"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/golang.org/x/net@v0.58.0"
+        }
+      ],
+      "comment": "direct=true; release_targets=swipenode,entire-swipenode; risk=GREEN; action=Reproduce LICENSE and PATENTS; fixed release selected after vulnerability audit."
+    },
+    {
+      "name": "golang.org/x/sys",
+      "SPDXID": "SPDXRef-Package-golang.org-x-sys",
+      "versionInfo": "v0.47.0",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "a3b5c63af6500800c1410e18ed536ad9d456411ec998e516f0ac71e19b0d816b"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/golang.org/x/sys@v0.47.0"
+        }
+      ],
+      "comment": "direct=true; release_targets=entire-swipenode-windows; risk=GREEN; action=Reproduce LICENSE and PATENTS."
+    },
+    {
+      "name": "gopkg.in/yaml.v3",
+      "SPDXID": "SPDXRef-Package-gopkg.in-yaml.v3",
+      "versionInfo": "v3.0.1",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT AND Apache-2.0",
+      "licenseDeclared": "MIT AND Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "7f1566fc6cc0cc45aa2c7baf72d23dd4a4bd8613669963a85aed174d8252ec20"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:golang/gopkg.in/yaml.v3@v3.0.1"
+        }
+      ],
+      "comment": "direct=true; release_targets=swipenode,entire-swipenode; risk=GREEN; action=Reproduce LICENSE and NOTICE; preserve modification notices for Apache-covered files."
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-Package-SwipeNode",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-Go-Standard-Library"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-SwipeNode",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-github.com-PuerkitoBio-goquery"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-SwipeNode",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-github.com-andybalholm-cascadia"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-SwipeNode",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-github.com-bahlo-generic-list-go"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-SwipeNode",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-github.com-buger-jsonparser"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-SwipeNode",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-github.com-google-uuid"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-SwipeNode",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-github.com-inconshreveable-mousetrap"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-SwipeNode",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-github.com-invopop-jsonschema"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-SwipeNode",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-github.com-mailru-easyjson"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-SwipeNode",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-github.com-mark3labs-mcp-go"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-SwipeNode",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-github.com-spf13-cast"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-SwipeNode",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-github.com-spf13-cobra"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-SwipeNode",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-github.com-spf13-pflag"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-SwipeNode",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-github.com-wk8-go-ordered-map-v2"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-SwipeNode",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-github.com-yosida95-uritemplate-v3"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-SwipeNode",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-golang.org-x-net"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-SwipeNode",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-golang.org-x-sys"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-SwipeNode",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-gopkg.in-yaml.v3"
+    }
+  ],
+  "hasExtractedLicensingInfos": [
+    {
+      "licenseId": "LicenseRef-Functional-Source-License-1.1",
+      "extractedText": "Functional Source License, Version 1.1, License Change-Date: 2028-03-09, Change-License: Apache-2.0\n\nCopyright 2026 SwipeNode Contributors\n\n1. Purpose: This agreement allows You to Use the Software for any purpose, except for providing a Competing Use.\n2. Competing Use: A Competing Use means use of the Software in or for a commercial product or service that competes with the Software or any other product or service we offer using the Software.\n3. Permitted Uses: For clarity, You may Use the Software for internal business purposes, to build non-competing applications, and for non-commercial open-source projects.\n4. Change-Date and Change-License: On the Change-Date (two years after the release of this version), the Software will automatically be licensed under the Change-License (Apache License 2.0). \n5. Defense: If You or your affiliates institute patent litigation against Us, your license to the Software ends automatically.\n6. Disclaimer: THE SOFTWARE IS PROVIDED \"AS IS\" AND WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED. WE DISCLAIM ALL WARRANTIES, INCLUDING ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. WE WILL NOT BE LIABLE FOR ANY DAMAGES ARISING OUT OF OR IN CONNECTION WITH THE SOFTWARE, INCLUDING DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES.\n",
+      "name": "Functional Source License, Version 1.1"
+    }
+  ]
+}

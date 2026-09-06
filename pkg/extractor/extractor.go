@@ -7,15 +7,14 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"net/http"
+	"net/netip"
 	"net/url"
 	"os"
 	"regexp"
 	"strings"
 	"time"
 
-	fhttp "github.com/bogdanfinn/fhttp"
-	tls_client "github.com/bogdanfinn/tls-client"
-	"github.com/bogdanfinn/tls-client/profiles"
 	"github.com/PuerkitoBio/goquery"
 )
 
@@ -34,8 +33,13 @@ var collapseWS = regexp.MustCompile(`\s{2,}`)
 //  1. Next.js  — <script id="__NEXT_DATA__" type="application/json">
 //  2. Nuxt.js  — any <script> containing window.__NUXT__
 //  3. Fallback — cleaned visible body text (boilerplate tags removed)
+
 func ExtractData(url string, browser string) (string, error) {
-	doc, err := fetchDocument(url, browser)
+	return extractData(url, browser, false)
+}
+
+func extractData(url string, browser string, allowPrivateTestTarget bool) (string, error) {
+	doc, err := fetchDocument(url, browser, allowPrivateTestTarget)
 	if err != nil {
 		return "", err
 	}
@@ -64,8 +68,8 @@ func ExtractDataFromFile(filePath string) (string, error) {
 // a private/internal IP address (SSRF protection). It returns the first valid
 // resolved IP so callers can pin the connection to the validated address,
 // preventing DNS rebinding attacks.
-func validateURL(rawURL string) (string, error) {
-	parsed, err := url.Parse(rawURL)
+func validateURL(rawURL string, allowPrivateTestTarget bool) (string, error) {
+	parsed, err := url.ParseRequestURI(rawURL)
 	if err != nil {
 		return "", fmt.Errorf("invalid URL: %w", err)
 	}
@@ -79,30 +83,29 @@ func validateURL(rawURL string) (string, error) {
 	if host == "" {
 		return "", fmt.Errorf("URL has no host")
 	}
+	if parsed.User != nil {
+		return "", fmt.Errorf("URL credentials are not allowed")
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	ips, err := net.DefaultResolver.LookupHost(ctx, host)
+	ips, err := net.DefaultResolver.LookupNetIP(ctx, "ip", host)
 	if err != nil {
 		return "", fmt.Errorf("DNS lookup failed for %s: %w", host, err)
 	}
 
-	testMode := os.Getenv("SWIPENODE_TEST_MODE") == "1"
 	var pinnedIP string
-	for _, ipStr := range ips {
-		ip := net.ParseIP(ipStr)
-		if ip == nil {
-			continue
-		}
-		if !testMode && (ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsUnspecified()) {
-			return "", fmt.Errorf("URL resolves to private/internal address %s: request blocked", ipStr)
+	for _, ip := range ips {
+		ip = ip.Unmap()
+		if !allowPrivateTestTarget && !isPublicAddress(ip) {
+			return "", fmt.Errorf("URL resolves to private/internal address %s: request blocked", ip)
 		}
 		// Block cloud metadata endpoints (169.254.169.254) — even in test mode.
-		if ip.Equal(net.ParseIP("169.254.169.254")) {
+		if ip == netip.MustParseAddr("169.254.169.254") {
 			return "", fmt.Errorf("URL resolves to cloud metadata address: request blocked")
 		}
 		if pinnedIP == "" {
-			pinnedIP = ipStr
+			pinnedIP = ip.String()
 		}
 	}
 
@@ -113,64 +116,76 @@ func validateURL(rawURL string) (string, error) {
 	return pinnedIP, nil
 }
 
-// fetchDocument performs an HTTP GET using a TLS-spoofed client that mimics
-// the given browser's fingerprint and returns a parsed goquery document.
-// It pins the connection to the IP address validated by validateURL to prevent
-// DNS rebinding attacks.
-func fetchDocument(rawURL string, browser string) (*goquery.Document, error) {
-	pinnedIP, err := validateURL(rawURL)
+func isPublicAddress(addr netip.Addr) bool {
+	addr = addr.Unmap()
+	if !addr.IsValid() || !addr.IsGlobalUnicast() || addr.IsLoopback() || addr.IsPrivate() || addr.IsLinkLocalUnicast() || addr.IsLinkLocalMulticast() || addr.IsUnspecified() || addr.IsMulticast() {
+		return false
+	}
+	if addr.Is4() {
+		for _, prefix := range []netip.Prefix{
+			netip.MustParsePrefix("0.0.0.0/8"), netip.MustParsePrefix("100.64.0.0/10"),
+			netip.MustParsePrefix("192.0.0.0/24"), netip.MustParsePrefix("192.0.2.0/24"),
+			netip.MustParsePrefix("198.18.0.0/15"), netip.MustParsePrefix("198.51.100.0/24"),
+			netip.MustParsePrefix("203.0.113.0/24"), netip.MustParsePrefix("240.0.0.0/4"),
+		} {
+			if prefix.Contains(addr) {
+				return false
+			}
+		}
+		return true
+	}
+	return !netip.MustParsePrefix("100::/64").Contains(addr) && !netip.MustParsePrefix("2001:db8::/32").Contains(addr) && !netip.MustParsePrefix("fc00::/7").Contains(addr) && !netip.MustParsePrefix("fe80::/10").Contains(addr)
+}
+
+// fetchDocument performs an HTTP GET with the standard library. The legacy
+// browser argument selects deterministic compatibility headers only; SwipeNode
+// does not impersonate browser TLS fingerprints or attempt to evade access
+// controls. The connection is pinned to the address validated by validateURL
+// while the original URL remains intact for Host routing and TLS SNI.
+func fetchDocument(rawURL string, browser string, allowPrivateTestTarget bool) (*goquery.Document, error) {
+	pinnedIP, err := validateURL(rawURL, allowPrivateTestTarget)
 	if err != nil {
 		return nil, err
 	}
 
-	var selectedProfile profiles.ClientProfile
+	var userAgent string
 	switch strings.ToLower(browser) {
 	case "safari":
-		selectedProfile = profiles.Safari_IOS_16_0
+		userAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1"
 	case "firefox":
-		selectedProfile = profiles.Firefox_120
+		userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0"
 	case "chrome":
-		selectedProfile = profiles.Chrome_120
+		userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 	default:
 		return nil, fmt.Errorf("unsupported browser %q: use chrome, safari, or firefox", browser)
 	}
 
-	// Rewrite the request URL to use the pinned IP, preserving the original
-	// Host header so TLS SNI and virtual hosting work correctly.
 	parsed, _ := url.Parse(rawURL) // already validated
-	originalHost := parsed.Host
-	originalHostname := parsed.Hostname()
-	port := parsed.Port()
-	if port == "" {
-		if parsed.Scheme == "https" {
-			port = "443"
-		} else {
-			port = "80"
-		}
+	dialer := &net.Dialer{Timeout: 5 * time.Second, KeepAlive: 30 * time.Second}
+	transport := &http.Transport{
+		Proxy: nil,
+		DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+			_, port, err := net.SplitHostPort(addr)
+			if err != nil {
+				return nil, err
+			}
+			return dialer.DialContext(ctx, network, net.JoinHostPort(pinnedIP, port))
+		},
 	}
-	parsed.Host = net.JoinHostPort(pinnedIP, port)
-	pinnedURL := parsed.String()
-
-	options := []tls_client.HttpClientOption{
-		tls_client.WithTimeoutSeconds(15),
-		tls_client.WithClientProfile(selectedProfile),
-		tls_client.WithNotFollowRedirects(),
-		tls_client.WithServerNameOverwrite(originalHostname),
-	}
-
-	client, err := tls_client.NewHttpClient(tls_client.NewNoopLogger(), options...)
-	if err != nil {
-		return nil, fmt.Errorf("creating tls client: %w", err)
+	defer transport.CloseIdleConnections()
+	client := &http.Client{
+		Timeout:   15 * time.Second,
+		Transport: transport,
+		CheckRedirect: func(*http.Request, []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
 	}
 
-	req, err := fhttp.NewRequest("GET", pinnedURL, nil)
+	req, err := http.NewRequest(http.MethodGet, parsed.String(), nil)
 	if err != nil {
 		return nil, fmt.Errorf("creating request: %w", err)
 	}
-
-	// Restore the original Host header for TLS SNI and virtual hosting.
-	req.Header.Set("Host", originalHost)
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+	req.Header.Set("User-Agent", userAgent)
 	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8")
 	req.Header.Set("Accept-Language", "en-US,en;q=0.9")
 

@@ -1,0 +1,38 @@
+{
+  "schema_version": "swipenode.trust-metadata.v1",
+  "purpose": "software_release",
+  "sequence": 1,
+  "issued_at": "2026-09-03T18:03:02Z",
+  "keys": [
+    {
+      "id": "ed25519:c1cf018ce592920881971d3b",
+      "algorithm": "Ed25519",
+      "public_key": "DRYeT6lLEH0GlNG3iQabdcQA6g0jneeunokuwq9YUC4=",
+      "created_at": "2026-09-03T18:03:02Z",
+      "active_from": "2026-09-03T18:03:02Z",
+      "purpose": "software_release",
+      "usages": [
+        "trust_metadata"
+      ]
+    },
+    {
+      "id": "ed25519:8cbdcab177c01d4dfd1406b0",
+      "algorithm": "Ed25519",
+      "public_key": "VqSj3RuelQjIG40v/zTsDwsDryc8XRY9VlxRMCqzVZk=",
+      "created_at": "2026-09-03T18:03:02Z",
+      "active_from": "2026-09-03T18:03:02Z",
+      "purpose": "software_release",
+      "usages": [
+        "content_signing"
+      ]
+    }
+  ],
+  "minimum_versions": {
+    "software": "2.0.0"
+  },
+  "signature": {
+    "algorithm": "Ed25519",
+    "key_id": "ed25519:c1cf018ce592920881971d3b",
+    "value": "dmOV9RjkoQZQRA4iukzcyriPuVhq2/uqGCHrwfSHSdtSoESGMcaSb2obbADP3ua9i7E4aVcBJx82WseQAugSAw=="
+  }
+}

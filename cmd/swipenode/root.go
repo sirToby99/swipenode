@@ -1,4 +1,3 @@
-// cmd/swipenode/root.go
 package cmd
 
 import (
@@ -8,12 +7,15 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "swipenode",
-	Short: "SwipeNode - zero-render extraction for AI agents",
-	Long:  "A lightning-fast CLI that extracts structured data from raw HTML without headless browsers.",
+	Use:          "swipenode",
+	Short:        "Source-backed engineering verification for customer-hosted workflows",
+	Long:         "SwipeNode resolves reviewed Knowledge Packs, records Evidence, and persists conservative Verification, Audit, and Provenance state in the customer's local repository context.",
+	Version:      buildVersion(),
+	SilenceUsage: true,
 }
 
-// Execute runs the root command. Called from main.go.
+// Execute runs the customer CLI. Managed service and Internal Admin commands
+// are deliberately absent from the public customer distribution.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)

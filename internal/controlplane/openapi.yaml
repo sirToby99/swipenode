@@ -1,0 +1,93 @@
+openapi: 3.1.0
+info:
+  title: SwipeNode Customer Control Plane API
+  version: 1.0.0
+  description: Customer-local API over SwipeNode Core. Local browsing performs no managed-server requests.
+paths:
+  /api/v1/session: {get: {summary: Get same-origin CSRF session token, responses: {"200": {description: Session}}}}
+  /api/v1/overview: {get: {summary: Get local Knowledge and verification overview, responses: {"200": {description: Overview}}}}
+  /api/v1/knowledge/packs: {get: {summary: List built-in, managed, and private Packs, responses: {"200": {description: Packs}}}}
+  /api/v1/knowledge/validate: {get: {summary: Validate built-in, activated managed, and project-local Pack definitions without network access, responses: {"200": {description: Validation result}}}}
+  /api/v1/knowledge/packs/{id}:
+    parameters: &packIDParameter
+      - {$ref: "#/components/parameters/id"}
+    get: {summary: Show one local Pack, responses: {"200": {description: Pack}}}
+  /api/v1/evidence:
+    get:
+      summary: List customer-local Evidence records
+      parameters: &localListParameters
+        - {$ref: "#/components/parameters/limit"}
+        - {$ref: "#/components/parameters/offset"}
+        - {$ref: "#/components/parameters/query"}
+        - {$ref: "#/components/parameters/status"}
+      responses: {"200": {description: Evidence ordered newest first}}
+  /api/v1/evidence/{id}:
+    parameters: *packIDParameter
+    get: {summary: Get one customer-local Evidence record, responses: {"200": {description: Evidence}, "404": {description: Not found}}}
+  /api/v1/verifications:
+    get:
+      summary: List customer-local Verification records
+      parameters: *localListParameters
+      responses: {"200": {description: Verifications ordered newest first}}
+  /api/v1/verifications/{id}:
+    parameters: *packIDParameter
+    get: {summary: Get one customer-local Verification record, responses: {"200": {description: Verification}, "404": {description: Not found}}}
+  /api/v1/provenance:
+    get:
+      summary: List customer-local Engineering Provenance
+      parameters: *localListParameters
+      responses: {"200": {description: Provenance ordered newest first}}
+  /api/v1/provenance/{id}:
+    parameters: *packIDParameter
+    get: {summary: Get one customer-local Engineering Provenance record, responses: {"200": {description: Provenance}, "404": {description: Not found}}}
+  /api/v1/audit:
+    get:
+      summary: List customer-local Audit Events
+      parameters: *localListParameters
+      responses: {"200": {description: Audit Events ordered newest first}}
+  /api/v1/audit/{id}:
+    parameters: *packIDParameter
+    get: {summary: Get one customer-local Audit Event, responses: {"200": {description: Audit Event}, "404": {description: Not found}}}
+  /api/v1/knowledge/packs/{id}/update-check:
+    parameters: *packIDParameter
+    post: {summary: Explicitly contact a configured managed remote to check an update, responses: {"200": {description: Update descriptor}}}
+  /api/v1/knowledge/packs/{id}/pull:
+    parameters: *packIDParameter
+    post: {summary: Explicitly download and verify a signed managed Pack, responses: {"200": {description: Staged release}}}
+  /api/v1/knowledge/packs/{id}/activate:
+    parameters: *packIDParameter
+    post: {summary: Activate an installed signed Pack locally, responses: {"200": {description: Active release}}}
+  /api/v1/knowledge/packs/{id}/rollback:
+    parameters: *packIDParameter
+    post: {summary: Roll back Pack activation locally, responses: {"200": {description: Active release}}}
+  /api/v1/knowledge/packs/{id}/refresh:
+    parameters: *packIDParameter
+    post: {summary: Refresh or revalidate deterministic Pack sources when explicitly requested, responses: {"200": {description: Refresh report}}}
+  /api/v1/governance/update-policy: {post: {summary: Set local managed update policy, responses: {"200": {description: Policy}}}}
+components:
+  parameters:
+    id:
+      name: id
+      in: path
+      required: true
+      schema: {type: string, pattern: "^[a-z0-9][a-z0-9_-]{0,127}$"}
+    limit:
+      name: limit
+      in: query
+      description: Page size. Supplying any list parameter enables bounded mode.
+      schema: {type: integer, minimum: 1, maximum: 200, default: 50}
+    offset:
+      name: offset
+      in: query
+      description: Zero-based local result offset.
+      schema: {type: integer, minimum: 0, maximum: 1000000, default: 0}
+    query:
+      name: q
+      in: query
+      description: Case-insensitive local text filter. No network search occurs.
+      schema: {type: string, maxLength: 256}
+    status:
+      name: status
+      in: query
+      description: Exact case-insensitive local status filter where supported.
+      schema: {type: string, maxLength: 64}

@@ -1,0 +1,35 @@
+schema_version: swipenode.knowledge-pack.v1
+id: nvidia-jetson
+owner: NVIDIA
+project: Jetson
+description: Reviewed source policy for JetPack 6.2.1 and Jetson Linux 36.4.4 compatibility on the NVIDIA Jetson Orin family.
+identities:
+  - kind: vendor
+    owner: NVIDIA
+    name: nvidia
+  - kind: product_family
+    owner: NVIDIA
+    name: jetson
+scope:
+  topics: [jetson, jetpack, jetson-linux]
+  components: [Jetson AGX Orin, Jetson Orin NX, Jetson Orin Nano]
+  versions: [JetPack 6.2.1, Jetson Linux 36.4.4]
+sources:
+  - id: jetson-linux-release-notes
+    canonical_url: https://docs.nvidia.com/jetson/jetpack/6.2.1/release-notes/index.html
+    authoritative_host: docs.nvidia.com
+    source_type: official_documentation
+    strategy: explicit_url
+    https_required: true
+    authoritative: true
+    revision: "JetPack 6.2.1"
+trust:
+  require_provenance: true
+freshness:
+  check_strategy: http_metadata_and_content_hash
+  suggested_interval: 720h
+  revision_strategy: explicit_source_revision
+provenance:
+  reviewed_at: "2026-09-02"
+  reviewed_by: swipenode-maintainers
+  basis: NVIDIA JetPack 6.2.1 release notes plus current live extraction and compatibility regression.

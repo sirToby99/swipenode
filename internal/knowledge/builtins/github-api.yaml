@@ -1,0 +1,33 @@
+schema_version: swipenode.knowledge-pack.v1
+id: github-api
+owner: GitHub
+project: REST API
+description: Reviewed source policy for documented GitHub REST API behavior.
+identities:
+  - kind: vendor
+    owner: GitHub
+    name: github
+  - kind: library
+    owner: GitHub
+    name: api
+scope:
+  topics: [rest-api, rate-limits, authentication]
+  components: [GitHub REST API]
+sources:
+  - id: github-rest-docs
+    canonical_url: https://docs.github.com/en/rest/using-the-rest-api/troubleshooting-the-rest-api
+    authoritative_host: docs.github.com
+    source_type: official_documentation
+    strategy: explicit_url
+    https_required: true
+    authoritative: true
+trust:
+  require_provenance: true
+freshness:
+  check_strategy: http_metadata_and_content_hash
+  suggested_interval: 168h
+  revision_strategy: source_derived
+provenance:
+  reviewed_at: "2026-09-01"
+  reviewed_by: swipenode-maintainers
+  basis: Existing real-source validation case.

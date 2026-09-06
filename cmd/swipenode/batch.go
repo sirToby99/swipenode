@@ -10,8 +10,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/spf13/cobra"
 	"github.com/sirToby99/swipenode/pkg/extractor"
+	"github.com/spf13/cobra"
 )
 
 // BatchResult holds the outcome of a single URL extraction.
@@ -144,7 +144,7 @@ var batchCmd = &cobra.Command{
 
 func init() {
 	batchCmd.Flags().StringVarP(&batchFile, "file", "f", "", "path to a text file containing one URL per line")
-	batchCmd.Flags().StringVarP(&batchImpersonate, "impersonate", "i", "chrome", "browser to impersonate (chrome, safari, firefox)")
+	batchCmd.Flags().StringVarP(&batchImpersonate, "impersonate", "i", "chrome", "compatibility header profile (chrome, safari, firefox; no TLS impersonation)")
 	batchCmd.Flags().IntVarP(&batchConcurrency, "concurrency", "c", 10, "number of concurrent workers")
 	batchCmd.Flags().StringVarP(&batchOut, "out", "o", "results.json", "file to write the output JSON array")
 	_ = batchCmd.MarkFlagRequired("file")

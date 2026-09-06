@@ -1,0 +1,16 @@
+# SwipeNode
+
+SwipeNode is verified engineering knowledge infrastructure for AI agents.
+Status: Private Beta.
+
+Managed Knowledge: https://knowledge.swipenode.dev/
+Customer source, CLI, documentation and public Trust: https://github.com/sirToby99/swipenode
+
+Customer Claims, Evidence, Verification History, Audit, Provenance, private
+Packs and engineering artifacts remain customer-hosted. Managed Knowledge
+distributes public maintained Pack and release metadata; it does not ingest
+customer engineering state.
+
+Start with README.md, docs/INSTALL.md and docs/VERIFY_JETSON.md. Verification
+outcomes are VERIFIED, CONFLICT and UNVERIFIED. Fetch and revalidation are
+explicit operations, not a background monitor.

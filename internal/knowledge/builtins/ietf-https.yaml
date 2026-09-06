@@ -1,0 +1,35 @@
+schema_version: swipenode.knowledge-pack.v1
+id: ietf-https
+owner: IETF
+project: HTTPS
+description: Reviewed source policy for the HTTPS RFC used by the real-source validation suite.
+identities:
+  - kind: protocol
+    owner: IETF
+    name: https
+  - kind: standard
+    owner: IETF
+    name: rfc-2818
+scope:
+  topics: [https, tls, http]
+  components: [RFC 2818]
+  versions: [RFC 2818]
+sources:
+  - id: rfc-2818
+    canonical_url: https://www.rfc-editor.org/rfc/rfc2818.html
+    authoritative_host: www.rfc-editor.org
+    source_type: standards_specification
+    strategy: explicit_url
+    https_required: true
+    authoritative: true
+    revision: "RFC 2818"
+trust:
+  require_provenance: true
+freshness:
+  check_strategy: http_metadata_and_content_hash
+  suggested_interval: 2160h
+  revision_strategy: explicit_source_revision
+provenance:
+  reviewed_at: "2026-09-01"
+  reviewed_by: swipenode-maintainers
+  basis: Existing real-source validation case.
