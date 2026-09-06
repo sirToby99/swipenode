@@ -1,7 +1,7 @@
 {
   "schema_version": "swipenode.public-export-provenance.v1",
   "product_source_sha": "3a38dafb97a163e63b6e8fe5fce452309d5b8ea4",
-  "product_export_sha": "dd516c72d296fa1fbe1c44f250db02f21913c078",
+  "product_export_sha": "03a3cc371e26227bf5d49eb85ca68d1278237ea1",
   "export_manifest_sha256": "43306e9082bf3e46062c08caf3c11936afe70d5dd07eb0f98c318cebdb8e54a6",
   "files": [
     {
