@@ -18,4 +18,12 @@ while [ "$#" -gt 0 ]; do
 done
 [ -n "$output" ] && [ -n "$url" ] && [ -n "${SWIPENODE_TEST_RELEASE_ASSETS:-}" ] || exit 2
 name=${url##*/}
-cp "$SWIPENODE_TEST_RELEASE_ASSETS/$name" "$output"
+source_dir=$SWIPENODE_TEST_RELEASE_ASSETS
+case "$url" in
+  */repository/*) source_dir=${SWIPENODE_TEST_REPOSITORY_TRUST_ASSETS:-$source_dir} ;;
+  */managed/*) source_dir=${SWIPENODE_TEST_MANAGED_TRUST_ASSETS:-$source_dir} ;;
+esac
+if [ -n "${SWIPENODE_TEST_CURL_LOG:-}" ]; then
+  printf '%s\n' "$url" >> "$SWIPENODE_TEST_CURL_LOG"
+fi
+cp "$source_dir/$name" "$output"

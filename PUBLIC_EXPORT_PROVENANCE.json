@@ -1,8 +1,8 @@
 {
   "schema_version": "swipenode.public-export-provenance.v1",
   "product_source_sha": "3a38dafb97a163e63b6e8fe5fce452309d5b8ea4",
-  "product_export_sha": "03a3cc371e26227bf5d49eb85ca68d1278237ea1",
-  "export_manifest_sha256": "43306e9082bf3e46062c08caf3c11936afe70d5dd07eb0f98c318cebdb8e54a6",
+  "product_export_sha": "5d697657eff9eedebaa38f5d58e2115647d25f7b",
+  "export_manifest_sha256": "ee398b10948a34510671c898d41442854d0831c528cd1490404253710075d9d7",
   "files": [
     {
       "path": ".github/workflows/ci.yml",
@@ -18,7 +18,11 @@
     },
     {
       "path": "CHANGELOG.md",
-      "sha256": "639f5b0fbf8d5b8b70847f23b9da3e4a2de69ba2c5850c20f8449263b2973fad"
+      "sha256": "13ddaa486d5f4ff6d47c0fe593be1deb5d5c08983b84b5760c7550bce0f71b91"
+    },
+    {
+      "path": "INSTALLATION.md",
+      "sha256": "e46cf04671078d25bae2f1cf3f770ef84cea0f4a76758dace11bdd6cb98f1e5a"
     },
     {
       "path": "LICENSE",
@@ -26,11 +30,15 @@
     },
     {
       "path": "README.md",
-      "sha256": "b2d89f71d8c7f2a6372720221663d1be154ceacdc8ea85e998bc35753ce7107a"
+      "sha256": "88d806d5c0de563e6a60793c04a8cc273b1a0d484c661dd808a7aa2d42b9bd25"
+    },
+    {
+      "path": "RELEASE_NOTES.md",
+      "sha256": "d07294ff70ea6741199fa1d95a501231a4cac0243374dc2ec61926a0ecf0875d"
     },
     {
       "path": "SECURITY.md",
-      "sha256": "d62334a4cce3e777e73d9d3a5c0b1dbb216f13f4ef19a1200194a0a5ba472622"
+      "sha256": "648750ab4248e5829a754cd56729355c4a0f1b4e962c06bfee87b04a75a4b404"
     },
     {
       "path": "cmd/entire-swipenode/main.go",
@@ -118,11 +126,11 @@
     },
     {
       "path": "docs/FAILURE_MODES.md",
-      "sha256": "b2190645a89d78d5e8fdcd126a14c04d190bc16c4573dccaddf443347b338133"
+      "sha256": "bbcd9fe4cae77f8fd419a80509a4f0194b0cc91260d61443f9246bb98fc481e6"
     },
     {
       "path": "docs/INSTALL.md",
-      "sha256": "769c6b8aafa95f293021611b1322f25234aa2fda72da74e26e2ea362f896849b"
+      "sha256": "a4b2332eb6649f9c408f132899c30cb797c26efdb91301c517bc06b1f5770ee7"
     },
     {
       "path": "docs/PUBLIC_BOUNDARY.md",
@@ -146,7 +154,7 @@
     },
     {
       "path": "docs/compliance/license-audit.md",
-      "sha256": "4792bee1f299c28cccd075545e57b2f991ffee615012d1a5e505b28afda33556"
+      "sha256": "196f8fcdf7f972ec08fe3737ce8e527ec089dfb8d63b11a4fcc0747612ab5282"
     },
     {
       "path": "docs/compliance/sbom.spdx.json",
@@ -166,7 +174,7 @@
     },
     {
       "path": "docs/release-security.md",
-      "sha256": "cce98d01ed4b0d78d33e1cac34f603e25b168d66d9590fb441209681a2f0dd67"
+      "sha256": "667503750be0a27a2dc88463ee8ca1c6cecc1c28ec1eb7d37a83ce68d7ad8de7"
     },
     {
       "path": "entire-plugin.yml",
@@ -538,7 +546,7 @@
     },
     {
       "path": "llms.txt",
-      "sha256": "f3439c932c5540e5f01239f49518e488e5fedab9ae51695d50c0f910479a6874"
+      "sha256": "486d3edcc3ba1cde89a80bfa61f229ff8e1b9ed98236b20d2c6c6b03bf04e871"
     },
     {
       "path": "main.go",
@@ -573,6 +581,10 @@
       "sha256": "c8e8e5bc269c7a6c2712db7348884044f7c2a14aec2e5ae90d06ae369b9ac195"
     },
     {
+      "path": "release-discovery.json",
+      "sha256": "cd1942146cb48893289626da6fbf5976c975c184d586ec7da7389257561aa555"
+    },
+    {
       "path": "scripts/build-software-release.sh",
       "sha256": "7855972387267bed2f1ad63d74a237c09ab7b41cecbedf60e2dd3eccf8d59ded"
     },
@@ -586,7 +598,7 @@
     },
     {
       "path": "scripts/install.sh",
-      "sha256": "b4b0690ff8a985ac329347d446f4077b43da5960de279609d970762ecd9fa4fb"
+      "sha256": "33d05c654315ce099bf7e3c1af235a85747b424955b6c8553eb26688cbcd0a54"
     },
     {
       "path": "scripts/sign-release-checksums.sh",
@@ -598,11 +610,11 @@
     },
     {
       "path": "scripts/test-installer-trust-chain.sh",
-      "sha256": "c7efb4bf9b0f7fc55b5b5482f52e133b54beb9a114a5c4259504de72cb8189c2"
+      "sha256": "906ccff18ede7e26b90d8da2452e6b19cb733a145283093ca04570f07428ae7f"
     },
     {
       "path": "scripts/test-public-boundary.sh",
-      "sha256": "91768af17f0fab4e85bde1d2617841dbcb3128b1e7a0a2217a6fafa8e627a0e8"
+      "sha256": "5db3e3d7c863abc42233d0353260965c45874177c65a18f2f45bc131f3ba4b80"
     },
     {
       "path": "scripts/test-release-signing.sh",
@@ -614,7 +626,7 @@
     },
     {
       "path": "scripts/testdata/fixture-curl.sh",
-      "sha256": "2097d163aa7c3d61678bdcd2697f0296981a0f4de7a08e2dae058d9832b174fa"
+      "sha256": "05f186272559ac271618cfba8a5a7f95134104bacc2479b3bd505b84d11c65c1"
     },
     {
       "path": "scripts/verify-jetson-workflow.sh",
@@ -623,6 +635,10 @@
     {
       "path": "scripts/verify-release-checksums.sh",
       "sha256": "54f8aa15fefd99571595c4a31ed0b2234dc37ede3773c578a12d8d464a4ef84a"
+    },
+    {
+      "path": "scripts/verify-software-trust.py",
+      "sha256": "8b4e73819f362b4845bd1278d2e251e4815a1d93e53b8ada3779b36852540ba2"
     },
     {
       "path": "tools/compliance/main.go",

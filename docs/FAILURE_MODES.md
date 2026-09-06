@@ -6,6 +6,8 @@ to make a demo pass.
 | Failure | Expected behavior |
 | --- | --- |
 | Unsupported OS/architecture | installer or release builder rejects it |
+| Missing/disagreeing Trust channels | installer stops before downloading or executing a candidate binary |
+| Tampered Trust metadata or unauthorized release key | bootstrap verifier rejects it |
 | Wrong archive hash | installer refuses replacement |
 | Tampered checksum manifest/signature | SSHSIG verification fails |
 | Unknown/revoked/unauthorized key | Trust authorization fails |

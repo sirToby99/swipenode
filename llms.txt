@@ -11,6 +11,12 @@ Packs and engineering artifacts remain customer-hosted. Managed Knowledge
 distributes public maintained Pack and release metadata; it does not ingest
 customer engineering state.
 
+For binary installation, use only scripts/install.sh together with
+scripts/verify-software-trust.py as documented in README.md. That path must
+authenticate software Trust metadata, release-key authorization, the signed
+checksum manifest and archive hash before the candidate binary is extracted or
+executed. Machine-readable release onboarding is in release-discovery.json.
+
 Start with README.md, docs/INSTALL.md and docs/VERIFY_JETSON.md. Verification
 outcomes are VERIFIED, CONFLICT and UNVERIFIED. Fetch and revalidation are
 explicit operations, not a background monitor.
