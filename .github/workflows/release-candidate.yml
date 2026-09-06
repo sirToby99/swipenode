@@ -1,0 +1,75 @@
+name: Build unsigned release candidate
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Existing approved semantic target, for example v2.0.1
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  GOTOOLCHAIN: local
+  GOFLAGS: -mod=readonly
+
+jobs:
+  preflight:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: {fetch-depth: 0}
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with: {go-version: 1.25.13, cache: true}
+      - run: printf '%s\n' '${{ inputs.version }}' | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'
+      - run: sh scripts/enforce-go-toolchain.sh
+      - run: go test ./...
+      - run: go test -race ./...
+      - run: go vet ./...
+      - run: sh scripts/test-installer-trust-chain.sh
+      - run: sh scripts/test-public-boundary.sh
+
+  build:
+    needs: preflight
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {goos: linux, goarch: amd64}
+          - {goos: linux, goarch: arm64}
+          - {goos: darwin, goarch: amd64}
+          - {goos: darwin, goarch: arm64}
+          - {goos: windows, goarch: amd64}
+          - {goos: windows, goarch: arm64}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: {fetch-depth: 0}
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with: {go-version: 1.25.13, cache: true}
+      - run: sh scripts/enforce-go-toolchain.sh
+      - name: Build deterministic unsigned candidate archive
+        env:
+          VERSION: ${{ inputs.version }}
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          SWIPENODE_COMMIT: ${{ github.sha }}
+        run: |
+          export SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)
+          export SWIPENODE_BUILD_DATE=$(git log -1 --format=%cI)
+          sh scripts/build-software-release.sh "$VERSION" "$GOOS" "$GOARCH" dist
+          sh scripts/inspect-software-release.sh dist/*
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: unsigned-candidate-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 7
+
+# This workflow never signs or publishes a GitHub Release. Its output remains
+# an untrusted candidate until the offline-key handoff and independent online
+# verification complete.

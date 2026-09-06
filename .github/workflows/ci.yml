@@ -1,0 +1,56 @@
+name: Public customer channel CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  GOTOOLCHAIN: local
+  GOFLAGS: -mod=readonly
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: {fetch-depth: 0}
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with: {go-version: 1.25.13, cache: true}
+      - run: sh scripts/enforce-go-toolchain.sh
+      - run: test -z "$(gofmt -l .)"
+      - run: go test ./...
+      - run: go test -race ./...
+      - run: go vet ./...
+      - run: git diff --check
+      - run: go run golang.org/x/vuln/cmd/govulncheck@v1.7.0 ./...
+      - run: go run github.com/zricethezav/gitleaks/v8@v8.30.0 git --redact --no-banner
+      - run: go run ./tools/compliance
+      - run: git diff --exit-code -- docs/compliance/THIRD_PARTY_NOTICES.md docs/compliance/sbom.spdx.json
+      - run: sh scripts/test-installer-trust-chain.sh
+      - run: sh scripts/test-software-release-pipeline.sh
+      - run: sh scripts/test-public-boundary.sh
+
+  cross-build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {goos: linux, goarch: amd64}
+          - {goos: linux, goarch: arm64}
+          - {goos: darwin, goarch: amd64}
+          - {goos: darwin, goarch: arm64}
+          - {goos: windows, goarch: amd64}
+          - {goos: windows, goarch: arm64}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with: {go-version: 1.25.13, cache: true}
+      - run: sh scripts/enforce-go-toolchain.sh
+      - run: GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} CGO_ENABLED=0 go build ./...

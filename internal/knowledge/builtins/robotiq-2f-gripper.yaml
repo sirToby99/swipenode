@@ -1,0 +1,33 @@
+schema_version: swipenode.knowledge-pack.v1
+id: robotiq-2f-gripper
+owner: Robotiq
+project: 2F Gripper
+description: Reviewed source policy for Robotiq 2F adaptive gripper operating specifications.
+identities:
+  - kind: vendor
+    owner: Robotiq
+    name: robotiq
+  - kind: product_family
+    owner: Robotiq
+    name: 2f-gripper
+scope:
+  topics: [robotics, operating-temperature]
+  components: [2F-85, 2F-140]
+sources:
+  - id: robotiq-faq
+    canonical_url: https://robotiq.com/faq
+    authoritative_host: robotiq.com
+    source_type: official_documentation
+    strategy: explicit_url
+    https_required: true
+    authoritative: true
+trust:
+  require_provenance: true
+freshness:
+  check_strategy: http_metadata_and_content_hash
+  suggested_interval: 720h
+  revision_strategy: source_derived
+provenance:
+  reviewed_at: "2026-09-01"
+  reviewed_by: swipenode-maintainers
+  basis: Existing real-source validation case.
