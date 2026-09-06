@@ -1,8 +1,8 @@
 {
   "schema_version": "swipenode.public-export-provenance.v1",
   "product_source_sha": "3a38dafb97a163e63b6e8fe5fce452309d5b8ea4",
-  "product_export_sha": "9445365f6941df9f2bd39fc067b87e7dd8b4d63e",
-  "export_manifest_sha256": "7592d9253a70186846366c60de931c3463eefe2bcd244291193ece389e6ec8cc",
+  "product_export_sha": "dd516c72d296fa1fbe1c44f250db02f21913c078",
+  "export_manifest_sha256": "43306e9082bf3e46062c08caf3c11936afe70d5dd07eb0f98c318cebdb8e54a6",
   "files": [
     {
       "path": ".github/workflows/ci.yml",
@@ -611,6 +611,10 @@
     {
       "path": "scripts/test-software-release-pipeline.sh",
       "sha256": "d8ad7632e8cfb18be244b53a43964da45d0fd28b0dafb46e9674fab3480fc358"
+    },
+    {
+      "path": "scripts/testdata/fixture-curl.sh",
+      "sha256": "2097d163aa7c3d61678bdcd2697f0296981a0f4de7a08e2dae058d9832b174fa"
     },
     {
       "path": "scripts/verify-jetson-workflow.sh",
